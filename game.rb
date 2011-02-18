@@ -22,18 +22,21 @@ class GameBoard
     # A simple iterator/index with If/else statements. This is not much shorter than an explicit test for all 6 row/columns. 
     #Columns and rows
     (0..2).each do |index|
+      #columns
       if @board[index] == @board[index+3] && @board[index] == @board[index + 6]
         #All that matters is we identify the symbol we're testing for concurrence in a row or column.  
-        @winner = @board[index]
-      elsif @board[3 * index] == @board[(3 * index) + 1] && @board[3 * index] == @board[(3 * index) + 2]
-        @winner = @board[3 * index]
+        @board[index].nil? ? nil : @winner = @board[index]
+      end
+      #rows
+      if @board[3 * index] == @board[(3 * index) + 1] && @board[3 * index] == @board[(3 * index) + 2]
+        @board[3 * index].nil? ? nil : @winner = @board[3 * index]
       end
     end
     #Diagonals. These are explicit. There are only two diagonals on a 3x3 board. If the board size wasn't fixed, this would be an iterator as well.
     if @board[0] == @board[4] && @board[0] == @board[8]
-      @winner = @board[0]
+      @board[0].nil? ? nil : @winner = @board[0]
     elsif @board[6] == @board[4] && @board[6] == @board[2]
-      @winner = @board[6]
+      @board[6].nil? ? nil : @winner = @board[6]
     end
   end
   
@@ -48,11 +51,3 @@ class GameBoard
     end
   end
 end
-
-
-test1 = GameBoard.new(%w{O X O O X X X O O})
-p test1.winner
-test2 = GameBoard.new(%w{O X O X O O X X O})
-p test2.winner
-test3 = GameBoard.new()
-test3.mark('X',0)

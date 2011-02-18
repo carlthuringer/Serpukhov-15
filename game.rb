@@ -19,7 +19,7 @@ class GameBoard
     checkWinner
   end
   def checkWinner
-    # A simple iterator/index with If/else statements. This is not much shorter than an explicit test for all 6 row/columns. 
+    # A simple iterator/index with If statements. This is not much shorter than an explicit test for all 6 row/columns. 
     #Columns and rows
     (0..2).each do |index|
       #columns
@@ -49,5 +49,12 @@ class GameBoard
     else
       raise ArgumentError, "Location is already marked."
     end
+  end  
+end
+
+def renderBoard(board)
+  output = "-------\n"
+  (0..2).each do |index|
+    
   end
 end

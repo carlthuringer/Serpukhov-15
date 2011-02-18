@@ -6,17 +6,18 @@ class GameBoard
   # win_state stores the winner of the game.
   # turn is a counter for how many turns have been taken.
   # Interesting fact: Nowhere does the board become picky about what symbols are used with it. You can play Ys and Ps, Bs and Gs, or P, B & Js. :D 
-  attr_reader :board, :winner, :turn
+  attr_reader :board, :winner, :turn  
   
-  def initialize(board)
+  
+  def initialize(board = [])
+    @board = board #If you don't do this, the passed-in array doesn't become a class attribute. :(
     #Because we'll soon need to address the array by position, I want to make sure it either has a complete board, or re-initialize it with 9 nil objects. 
-    if @board.nil? || @board.length < 9 
+    if @board.nil? || @board.length != 9 
       @board = Array.new(9)
     end
     #And because we allow a game board to be passed in, we want to check for a winner immediately.
     checkWinner
   end
-    
   def checkWinner
     # A simple iterator/index with If/else statements. This is not much shorter than an explicit test for all 6 row/columns. 
     #Columns and rows
@@ -35,8 +36,23 @@ class GameBoard
       @winner = @board[6]
     end
   end
+  
+  def mark(symbol, address)
+    #Symbol is provided by the player. Presumably an X or O.
+    #address is currently restricted to a single digit identifying a place on the array.
+    if @board[address].nil?
+      @board[address] = symbol
+      checkWinner
+    else
+      raise ArgumentError, "Location is already marked."
+    end
+  end
 end
 
-solution = %w{O X O O X X X O O}
-test1 = GameBoard.new(solution)
+
+test1 = GameBoard.new(%w{O X O O X X X O O})
 p test1.winner
+test2 = GameBoard.new(%w{O X O X O O X X O})
+p test2.winner
+test3 = GameBoard.new()
+test3.mark('X',0)

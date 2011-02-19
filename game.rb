@@ -15,6 +15,7 @@ class GameBoard
       @board = Array.new(9)
     end
   end
+
   def [](index)
     @board[index]
   end
@@ -25,7 +26,7 @@ class GameBoard
     if @board[address].nil?
       @board[address] = symbol
     else
-      #raise ArgumentError, "Location is already marked."
+      throw :alreadyMarked
     end
   end
 end
@@ -50,15 +51,18 @@ class NoughtsAndCrosses
   end
 
   def mark(address)
-    if @current_game_board.winner.nil? && @turn <= 9
-      @current_game_board.mark(@players[@current_player], address)
-      @turn += @turn
-      checkWinner
-      @current_player == 0 ? @current_player = 1 : @current_player = 0
-    elsif @turn > 9 || @current_game_board.winner == 'tie'
+    if @winner.nil? && @turn <= 9
+      catch :alreadyMarked do
+        @current_game_board.mark(@players[@current_player], address)
+        @turn += 1
+        checkWinner
+        @current_player == 0 ? @current_player = 1 : @current_player = 0
+        @turn > 9 and @winner.nil? ? @winner = 'tie' : nil
+      end
+    elsif @turn > 9 || @winner == 'tie'
       #raise "Game ended in a Tie.\nStart a new game."
     else
-      #raise "Game has been won by " + @current_game_board.winner + "\nStart a new game."
+      #raise "Game has been won by " + @winner + "\nStart a new game."
     end
   end
 
@@ -67,20 +71,24 @@ class NoughtsAndCrosses
     #Columns and rows
     (0..2).each do |index|
       #columns
-      if @current_game_board[index] == @current_game_board[index+3] && @current_game_board[index] == @current_game_board[index + 6]
+      if @current_game_board[index] == @current_game_board[index+3] and @current_game_board[index] == @current_game_board[index + 6] and not @current_game_board[index].nil?
         #All that matters is we identify the symbol we're testing for concurrence in a row or column.
-        @current_game_board[index].nil? ? nil : @current_game_board.winner = @current_game_board[index]
+        @winner = @current_game_board[index]
+        puts "vert" + index.to_s
       end
       #rows
-      if @current_game_board[3 * index] == @current_game_board[(3 * index) + 1] && @current_game_board[3 * index] == @current_game_board[(3 * index) + 2]
-        @current_game_board[3 * index].nil? ? nil : @current_game_board.winner = @current_game_board[3 * index]
+      if @current_game_board[3 * index] == @current_game_board[(3 * index) + 1] and @current_game_board[3 * index] == @current_game_board[(3 * index) + 2] and not @current_game_board[3 * index].nil?
+        @winner = @current_game_board[3 * index]
+        puts "horiz" + index.to_s
       end
     end
     #Diagonals. These are explicit. There are only two diagonals on a 3x3 board. If the board size wasn't fixed, this would be an iterator as well.
-    if @current_game_board[0] == @current_game_board[4] && @current_game_board[0] == @current_game_board[8]
-      @current_game_board[0].nil? ? nil : @current_game_board.winner = @current_game_board[0]
-    elsif @current_game_board[6] == @current_game_board[4] && @current_game_board[6] == @current_game_board[2]
-      @current_game_board[6].nil? ? nil : @current_game_board.winner = @current_game_board[6]
+    if @current_game_board[0] == @current_game_board[4] and @current_game_board[0] == @current_game_board[8] and not @current_game_board[0].nil?
+      @winner = @current_game_board[0]
+      puts "diag1"
+    elsif @current_game_board[6] == @current_game_board[4] and @current_game_board[6] == @current_game_board[2] and not @current_game_board[6].nil?
+      @winner = @current_game_board[6]
+      puts "diag2"
     end
   end
 end
@@ -96,16 +104,23 @@ def playRandomly
     while game.winner.nil?
       game.mark(rand(9))
     end
-  } 
+  }
   test_games.each { |game|
-    if game.winner.nil? 
+    if game.winner.nil?
       puts "There was no winner this time. The state of the board was:"
-      p game.board
+      simpleDraw(game.board)
     else
       puts "The winner was " + game.winner + " and the state of the board was:"
-      p game.board
+      simpleDraw(game.board)
     end
-    
+
+  }
+end
+
+def simpleDraw(board)
+  clean_board = board.collect { |obj| obj.nil? ? " " : obj }
+  3.times { |index|
+    p clean_board[3 * index, 3]
   }
 end
 

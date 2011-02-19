@@ -15,6 +15,9 @@ class GameBoard
       @board = Array.new(9)
     end
   end
+  def [](index)
+    @board[index]
+  end
 
   def mark(symbol, address)
     #Symbol is provided by the player. Presumably an X or O.
@@ -22,7 +25,7 @@ class GameBoard
     if @board[address].nil?
       @board[address] = symbol
     else
-      raise ArgumentError, "Location is already marked."
+      #raise ArgumentError, "Location is already marked."
     end
   end
 end
@@ -34,8 +37,11 @@ class NoughtsAndCrosses
   # Players alternate symbols, with X going first. Each player makes a single mark in an unmarked space.
   # To achieve a win, a player must place the last symbol to form a row, column or diagonal of concurrent, identical symbols.
   # If neither player has achieved a win by the 9th turn, the game ends in a tie.
+  attr_reader :winner, :board
   def initialize()
     @current_game_board = GameBoard.new
+    @winner = @current_game_board.winner
+    @board = @current_game_board.board
     @player1 = 'X'
     @player2 = 'O'
     @players = [@player1, @player2]
@@ -50,9 +56,9 @@ class NoughtsAndCrosses
       checkWinner
       @current_player == 0 ? @current_player = 1 : @current_player = 0
     elsif @turn > 9 || @current_game_board.winner == 'tie'
-      raise "Game ended in a Tie.\nStart a new game."
+      #raise "Game ended in a Tie.\nStart a new game."
     else
-      raise "Game has been won by " + @current_game_board.winner + "\nStart a new game."
+      #raise "Game has been won by " + @current_game_board.winner + "\nStart a new game."
     end
   end
 
@@ -78,3 +84,29 @@ class NoughtsAndCrosses
     end
   end
 end
+
+def playRandomly
+  #test 3 games.
+  game_a = NoughtsAndCrosses.new
+  game_b = NoughtsAndCrosses.new
+  game_c = NoughtsAndCrosses.new
+  test_games = []
+  test_games << game_a << game_b << game_c
+  test_games.each { |game|
+    while game.winner.nil?
+      game.mark(rand(9))
+    end
+  } 
+  test_games.each { |game|
+    if game.winner.nil? 
+      puts "There was no winner this time. The state of the board was:"
+      p game.board
+    else
+      puts "The winner was " + game.winner + " and the state of the board was:"
+      p game.board
+    end
+    
+  }
+end
+
+playRandomly

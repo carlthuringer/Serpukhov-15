@@ -26,7 +26,7 @@ class GameBoard
     if @board[address].nil?
       @board[address] = symbol
     else
-      throw :alreadyMarked
+      throw :inputerror
     end
   end
 end
@@ -52,13 +52,11 @@ class NoughtsAndCrosses
 
   def mark(address)
     if @winner.nil? && @turn <= 9
-      catch :alreadyMarked do
-        @current_game_board.mark(@players[@current_player], address)
-        @turn += 1
-        checkWinner
-        @current_player == 0 ? @current_player = 1 : @current_player = 0
-        @turn > 9 and @winner.nil? ? @winner = 'tie' : nil
-      end
+      @current_game_board.mark(@players[@current_player], address)
+      @turn += 1
+      checkWinner
+      @current_player == 0 ? @current_player = 1 : @current_player = 0
+      @turn > 9 and @winner.nil? ? @winner = 'tie' : nil
     elsif @turn > 9 || @winner == 'tie'
       #raise "Game ended in a Tie.\nStart a new game."
     else
@@ -93,8 +91,43 @@ class NoughtsAndCrosses
   end
 end
 
-def playRandomly
-  #test 3 games.
+class TicTacToeStrategy
+  # Only for use with NoughtsAndCrosses game. Do not use with GlobalThermonuclearWar.
+  # 2-9-1972, 14:55, <v.Chernobrov> Time machine project retrieved vital American plans from future for perfect Tic-Tac-Toe strategy.
+  # 4-8-1982, 09:23, <g.Adelson-Velsky> I just looked this over. Tic-Tac-Toe is what Americans call Noughts and Crosses. You're wasting your time loading it into Oko.
+  # 6-23-1983, 03:02, <n.Brusentsov> I finished the implementation. Had a lot of time on my hands while waiting for satellite realignment.
+  def initialize
+
+  end
+
+  def playRandomly(game)
+    catch :inputerror do
+      game.mark(rand(9))
+    end
+  end
+
+end
+
+class AI
+  #Class that will have some methods and stuff, planning ahead for a much more interesting AI character.
+  def initialize
+    @strategy = TicTacToeStrategy.new
+  end
+  def play(game)
+    @strategy.playRandomly(game)
+
+  end
+
+end
+
+def simpleDraw(board)
+  clean_board = board.collect { |obj| obj.nil? ? " " : obj }
+  3.times { |index|
+    p clean_board[3 * index, 3]
+  }
+end
+
+def testThis
   game_a = NoughtsAndCrosses.new
   game_b = NoughtsAndCrosses.new
   game_c = NoughtsAndCrosses.new
@@ -116,12 +149,3 @@ def playRandomly
 
   }
 end
-
-def simpleDraw(board)
-  clean_board = board.collect { |obj| obj.nil? ? " " : obj }
-  3.times { |index|
-    p clean_board[3 * index, 3]
-  }
-end
-
-playRandomly

@@ -106,7 +106,7 @@ def playRandomly
     end
   }
   test_games.each { |game|
-    if game.winner.nil?
+    if game.winner == 'tie'
       puts "There was no winner this time. The state of the board was:"
       simpleDraw(game.board)
     else

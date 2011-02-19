@@ -3,11 +3,8 @@
 class GameBoard
   # Attributes.
   # board keeps an array of the current state of the board.
-  # win_state stores the winner of the game.
-  # turn is a counter for how many turns have been taken.
   # Interesting fact: Nowhere does the board become picky about what symbols are used with it. You can play Ys and Ps, Bs and Gs, or P, B & Js. :D
-  attr_reader :board, :winner, :turn
-  attr_writer :winner
+  attr_reader :board
   def initialize(board = [])
     @board = board #If you don't do this, the passed-in array doesn't become a class attribute. :(
     #Because we'll soon need to address the array by position, I want to make sure it either has a complete board, or re-initialize it with 9 nil objects.
@@ -39,23 +36,27 @@ class NoughtsAndCrosses
   # To achieve a win, a player must place the last symbol to form a row, column or diagonal of concurrent, identical symbols.
   # If neither player has achieved a win by the 9th turn, the game ends in a tie.
   attr_reader :winner, :board
-  def initialize()
+  def initialize(player1, player2)
     @current_game_board = GameBoard.new
-    @winner = @current_game_board.winner
+    @winner = nil
     @board = @current_game_board.board
-    @player1 = 'X'
-    @player2 = 'O'
+    @player1 = player1
+    @player2 = player2
     @players = [@player1, @player2]
-    @current_player = 0 #0-index. 0 is 1, 1 is 2.
     @turn = 1
+    @history = []
+  end
+  
+  def currentPlayer
+    @players[0]
   end
 
-  def mark(address)
+  def play(address)
     if @winner.nil? && @turn <= 9
-      @current_game_board.mark(@players[@current_player], address)
-      @turn += 1
+      @turn % 2 == 0 ? @current_game_board.mark('O', address) : @current_game_board.mark('X', address)
       checkWinner
-      @current_player == 0 ? @current_player = 1 : @current_player = 0
+      @turn += 1
+      @players.reverse!
       @turn > 9 and @winner.nil? ? @winner = 'tie' : nil
     elsif @turn > 9 || @winner == 'tie'
       #raise "Game ended in a Tie.\nStart a new game."
@@ -71,23 +72,34 @@ class NoughtsAndCrosses
       #columns
       if @current_game_board[index] == @current_game_board[index+3] and @current_game_board[index] == @current_game_board[index + 6] and not @current_game_board[index].nil?
         #All that matters is we identify the symbol we're testing for concurrence in a row or column.
-        @winner = @current_game_board[index]
+        @winner['winner'], @winner['mark'] = @player[0], @current_game_board[index]
         puts "vert" + index.to_s
       end
       #rows
       if @current_game_board[3 * index] == @current_game_board[(3 * index) + 1] and @current_game_board[3 * index] == @current_game_board[(3 * index) + 2] and not @current_game_board[3 * index].nil?
-        @winner = @current_game_board[3 * index]
+        @winner['winner'], @winner['mark'] = @player[0], @current_game_board[3 * index]
         puts "horiz" + index.to_s
       end
     end
     #Diagonals. These are explicit. There are only two diagonals on a 3x3 board. If the board size wasn't fixed, this would be an iterator as well.
     if @current_game_board[0] == @current_game_board[4] and @current_game_board[0] == @current_game_board[8] and not @current_game_board[0].nil?
-      @winner = @current_game_board[0]
+      @winner['winner'], @winner['mark'] = @player[0], @current_game_board[0]
       puts "diag1"
     elsif @current_game_board[6] == @current_game_board[4] and @current_game_board[6] == @current_game_board[2] and not @current_game_board[6].nil?
-      @winner = @current_game_board[6]
+      @winner['winner'], @winner['mark'] = @player[0], @current_game_board[6]
       puts "diag2"
     end
+  end
+  
+  def newGame
+    @history << { 
+      'board' => @current_game_board,
+      'winner' => @winner 
+    }
+    @current_game_board = GameBoard.new
+    @winner = nil
+    @turn = 1
+    
   end
 end
 
@@ -102,10 +114,16 @@ class TicTacToeStrategy
 
   def playRandomly(game)
     catch :inputerror do
-      game.mark(rand(9))
+      game.play(rand(9))
     end
   end
 
+end
+
+class Player
+  def play(game, input)
+    game.play(input)
+  end
 end
 
 class AI
@@ -135,7 +153,7 @@ def testThis
   test_games << game_a << game_b << game_c
   test_games.each { |game|
     while game.winner.nil?
-      game.mark(rand(9))
+      game.play(rand(9))
     end
   }
   test_games.each { |game|
@@ -148,4 +166,15 @@ def testThis
     end
 
   }
+end
+
+def playNAC
+  reference_board = (0..9).to_a
+  game = NoughtsAndCrosses.new
+  red_gene = AI.new  
+  petrov = Player.new
+  
+  while game.winner.nil?
+    simpleDraw(game.board)
+  end
 end

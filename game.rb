@@ -106,6 +106,19 @@ class NoughtsAndCrosses
     end
   end
 
+  def winSlicer
+    board_slices = [
+          @current_game_board.board[0, 3],
+          @current_game_board.board[3, 3],
+          @current_game_board.board[6, 3],
+          [@current_game_board.board[0], @current_game_board.board[3], @current_game_board.board[6]],
+          [@current_game_board.board[1], @current_game_board.board[4], @current_game_board.board[7]],
+          [@current_game_board.board[2], @current_game_board.board[5], @current_game_board.board[8]],
+          [@current_game_board.board[0], @current_game_board.board[4], @current_game_board.board[8]],
+          [@current_game_board.board[6], @current_game_board.board[4], @current_game_board.board[2]]
+        ]
+  end
+  
   def newGame
     # Reset the state of the game, and save the current game and winner to the history.
     @history << {
@@ -173,16 +186,7 @@ class TicTacToeStrategy
       'slice' => nil,
       'opening' => nil
     }
-    board_slices = [
-      game.board[0, 3],
-      game.board[3, 3],
-      game.board[6, 3],
-      [game.board[0], game.board[3], game.board[6]],
-      [game.board[1], game.board[4], game.board[7]],
-      [game.board[2], game.board[5], game.board[8]],
-      [game.board[0], game.board[4], game.board[8]],
-      [game.board[6], game.board[4], game.board[2]]
-    ]
+    board_slices = game.winSlicer
     board_slices.each_index do |index|
       # Here's the plan. Check each slice for a nil (blank space) and two different indexes on 'mark'.
       # This should confirm a row, column, or diagonal which is one move away from a win by 'mark'.
@@ -205,6 +209,10 @@ class TicTacToeStrategy
     end
   end
 
+  def forceDefense(game, mark)
+    
+  end
+  
   def playRandomly
     # Doesn't get much simpler than this!
     # TODO error handling for :inputerror.
@@ -314,3 +322,5 @@ def playNAC
     simpleDraw(game.board)
   end
 end
+
+playNAC

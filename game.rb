@@ -126,6 +126,7 @@ class NoughtsAndCrosses
       'winner' => @winner.clone
     }
     @current_game_board = GameBoard.new
+    @board = @current_game_board.board
     @winner = nil
     @turn = 1
 
@@ -310,10 +311,12 @@ def playNAC
   big_mac = AI.new("BIGMAC")
   petrov = Player.new("Petrov")
   game = NoughtsAndCrosses.new(big_mac.name, petrov.name)
-  print "Shall we play a game? (y/n):"
+  system("clear")
+  print "Shall we play a game? (y/n): "
   prompt = gets
   prompt.chomp!
   while prompt === 'y'
+    system("clear")
     while game.winner.nil?
       # Alright, so...
       # Who goes first?
@@ -330,7 +333,7 @@ def playNAC
           simpleDraw(game.board)
           puts "Reference Board:"
           simpleDraw(reference_board)
-          puts "Input the number of the space you will mark:"
+          print "Input the number of the space you will mark: "
           petrov.play(game, gets.to_i)
         rescue
           puts "That place is already marked. Try again."
@@ -347,7 +350,7 @@ def playNAC
       puts "The winner was " + game.winner['winner'] + " with '" + game.winner['mark'] + "' and the state of the board was:"
       simpleDraw(game.board)
     end
-    print "Play again? (y/n):"
+    print "Play again? (y/n): "
     prompt = gets
     prompt.chomp!
     game.newGame

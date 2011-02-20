@@ -310,40 +310,50 @@ def playNAC
   big_mac = AI.new("BIGMAC")
   petrov = Player.new("Petrov")
   game = NoughtsAndCrosses.new(big_mac.name, petrov.name)
-  while game.winner.nil?
-    # Alright, so...
-    # Who goes first?
-    # Draw the game board.
-    # Get some input, or do AI's turn.
-    # Repeat
-    # ...?
-    # Profit!
-    case game.currentPlayer
-    when big_mac.name
-      big_mac.play(game)
-    when petrov.name
-      begin
-        simpleDraw(game.board)
-        puts "Reference Board:"
-        simpleDraw(reference_board)
-        puts "Input the number of the space you will mark:"
-        petrov.play(game, gets.to_i)
-      rescue
-        puts "That place is already marked. Try again."
-        retry
+  print "Shall we play a game? (y/n):"
+  prompt = gets
+  prompt.chomp!
+  while prompt === 'y'
+    while game.winner.nil?
+      # Alright, so...
+      # Who goes first?
+      # Draw the game board.
+      # Get some input, or do AI's turn.
+      # Repeat
+      # ...?
+      # Profit!
+      case game.currentPlayer
+      when big_mac.name
+        big_mac.play(game)
+      when petrov.name
+        begin
+          simpleDraw(game.board)
+          puts "Reference Board:"
+          simpleDraw(reference_board)
+          puts "Input the number of the space you will mark:"
+          petrov.play(game, gets.to_i)
+        rescue
+          puts "That place is already marked. Try again."
+          retry
+        end
       end
+
     end
 
+    if game.winner['winner'] == 'tie'
+      puts "There was no winner this time. The state of the board was:"
+      simpleDraw(game.board)
+    else
+      puts "The winner was " + game.winner['winner'] + " with '" + game.winner['mark'] + "' and the state of the board was:"
+      simpleDraw(game.board)
+    end
+    print "Play again? (y/n):"
+    prompt = gets
+    prompt.chomp!
+    game.newGame
   end
 
-  if game.winner['winner'] == 'tie'
-    puts "There was no winner this time. The state of the board was:"
-    simpleDraw(game.board)
-  else
-    puts "The winner was " + game.winner['winner'] + " with '" + game.winner['mark'] + "' and the state of the board was:"
-    simpleDraw(game.board)
-  end
-  
+  puts "You can try to convince me of mutually assured destruction next time.\nBut be warned, in U.S.S.R, game destroys you!"
 end
 
 playNAC

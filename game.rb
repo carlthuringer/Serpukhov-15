@@ -108,17 +108,17 @@ class NoughtsAndCrosses
 
   def winSlicer
     board_slices = [
-          @current_game_board.board[0, 3],
-          @current_game_board.board[3, 3],
-          @current_game_board.board[6, 3],
-          [@current_game_board.board[0], @current_game_board.board[3], @current_game_board.board[6]],
-          [@current_game_board.board[1], @current_game_board.board[4], @current_game_board.board[7]],
-          [@current_game_board.board[2], @current_game_board.board[5], @current_game_board.board[8]],
-          [@current_game_board.board[0], @current_game_board.board[4], @current_game_board.board[8]],
-          [@current_game_board.board[6], @current_game_board.board[4], @current_game_board.board[2]]
-        ]
+      @current_game_board.board[0, 3],
+      @current_game_board.board[3, 3],
+      @current_game_board.board[6, 3],
+      [@current_game_board.board[0], @current_game_board.board[3], @current_game_board.board[6]],
+      [@current_game_board.board[1], @current_game_board.board[4], @current_game_board.board[7]],
+      [@current_game_board.board[2], @current_game_board.board[5], @current_game_board.board[8]],
+      [@current_game_board.board[0], @current_game_board.board[4], @current_game_board.board[8]],
+      [@current_game_board.board[6], @current_game_board.board[4], @current_game_board.board[2]]
+    ]
   end
-  
+
   def newGame
     # Reset the state of the game, and save the current game and winner to the history.
     @history << {
@@ -162,14 +162,15 @@ class TicTacToeStrategy
       their_mark = 'X'
     end
     # implemented strategies in reverse order of priority.
+    suggested_move = forceDefense(game, my_mark)
+    my_move, tactic = suggested_move, 'Force Defense' unless suggested_move.nil?
     suggested_move = checkForWin(game, their_mark)
-    my_move = suggested_move unless suggested_move.nil?
+    my_move, tactic = suggested_move, 'Block You' unless suggested_move.nil?
     suggested_move = checkForWin(game, my_mark)
-    my_move = suggested_move unless suggested_move.nil?
-    p "My Move:"
-    p my_move
+    my_move, tactic = suggested_move, 'Win Game' unless suggested_move.nil?
+    print "Tactic: " + tactic + "\nMy Move: " + my_move.to_s + "\n" unless tactic.nil? or my_move.nil?
     unless my_move.nil?
-      
+
       game.play(my_move)
     else
       begin
@@ -198,7 +199,6 @@ class TicTacToeStrategy
       end
     end
     unless target['slice'].nil?
-      p target
       # Translate all the 'openinigs' into an array index.
       case target['slice']
       when 0..2 then target['slice'] * 3 + target['opening']
@@ -210,9 +210,31 @@ class TicTacToeStrategy
   end
 
   def forceDefense(game, mark)
-    
+    # We'll scan the slices for my 'mark'
+    # If those slices can be compacted to length 1, we're alone in them.
+    # Then pick a random target from the remaining nils and return its array index.
+    target = {
+      'slice' => nil,
+      'opening' => nil
+    }
+    board_slices = game.winSlicer
+    board_slices.each_index do |index|
+      if board_slices[index].compact.length == 1 && board_slices[index].index(mark)
+        targets = [ { 'slice' => index, 'opening' => board_slices[index].index(nil) }, { 'slice' => index, 'opening' => board_slices[index].rindex(nil) } ]
+        target = targets[rand(2)]
+      end
+    end
+    unless target['slice'].nil?
+      # Translate all the 'openinigs' into an array index.
+      case target['slice']
+      when 0..2 then target['slice'] * 3 + target['opening']
+      when 3..5 then (target['slice'] - 4) + (target['opening'] * 3) + 1
+      when 6 then target['opening'] * 4
+      when 7 then 6 - (target['opening'] * 2)
+      end
+    end
   end
-  
+
   def playRandomly
     # Doesn't get much simpler than this!
     # TODO error handling for :inputerror.
@@ -321,6 +343,7 @@ def playNAC
     puts "The winner was " + game.winner['winner'] + " with '" + game.winner['mark'] + "' and the state of the board was:"
     simpleDraw(game.board)
   end
+  
 end
 
 playNAC

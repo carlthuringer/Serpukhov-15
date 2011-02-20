@@ -149,8 +149,10 @@ class TicTacToeStrategy
       their_mark = 'X'
     end
     # implemented strategies in reverse order of priority.
-    my_move = checkForWin(game, their_mark)
-    my_move = checkForWin(game, my_mark)
+    suggested_move = checkForWin(game, their_mark)
+    my_move = suggested_move unless suggested_move.nil?
+    suggested_move = checkForWin(game, my_mark)
+    my_move = suggested_move unless suggested_move.nil?
     p "My Move:"
     p my_move
     unless my_move.nil?
@@ -188,7 +190,6 @@ class TicTacToeStrategy
       if board_slices[index].index(nil)
         if board_slices[index].index(mark) != board_slices[index].rindex(mark)
           target['slice'], target['opening'] = index, board_slices[index].index(nil)
-            p target
         end
       end
     end
@@ -196,14 +197,10 @@ class TicTacToeStrategy
       p target
       # Translate all the 'openinigs' into an array index.
       case target['slice']
-      when (0..2)
-        target['slice'] * 3 + target['opening']
-      when (3..5)
-        (target['slice'] - 4) + (target['opening'] * 3) + 1
-      when 6
-        target['opening'] * 4
-      when 7
-        6 - (target['opening'] * 2)
+      when 0..2 then target['slice'] * 3 + target['opening']
+      when 3..5 then (target['slice'] - 4) + (target['opening'] * 3) + 1
+      when 6 then target['opening'] * 4
+      when 7 then 6 - (target['opening'] * 2)
       end
     end
   end

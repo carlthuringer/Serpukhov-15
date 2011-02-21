@@ -43,8 +43,8 @@ class NoughtsAndCrosses
     @current_game_board = GameBoard.new
     @winner = nil
     @board = @current_game_board.board
-    @player1 = player1
-    @player2 = player2
+    @player1 = [player1, 'X']
+    @player2 = [player2, 'O']
     @players = [@player1, @player2]
     @turn = 1
     @history = []
@@ -53,7 +53,7 @@ class NoughtsAndCrosses
   def currentPlayer
     # As you'll see later, the players array is reversed to facilitate the switching of the current player.
     # I think this is clever, and that it will also be more trouble than it was worth. :D
-    @players[0]
+    @players[0][0]
   end
 
   def play(address)
@@ -72,14 +72,7 @@ class NoughtsAndCrosses
       # Therefore, there are no more moves left. Check to see if @winner is still nil.
       # If both are true, then that's it. Set winner to a tie game.
       @turn > 9 and @winner.nil? ? @winner =  {'winner' => 'tie', 'mark' => 'tie' } : nil
-    elsif @turn > 9 || @winner == 'tie'
-      # TODO Error handling. If someone tries to play on a tie game, throw.
-      #raise "Game ended in a Tie.\nStart a new game."
-    else
-      # TODO Error handling. If someone tries to play on a finished game. Throw.
-      #raise "Game has been won by " + @winner + "\nStart a new game."
     end
-    # Above: A lot of this is to protect the programmer... from himself.
   end
 
   def checkWinner
@@ -128,6 +121,8 @@ class NoughtsAndCrosses
     @board = @current_game_board.board
     @winner = nil
     @turn = 1
+    @player1, @player2 = @player2, @player1
+    @players= [@player1, @player2]
 
   end
 
@@ -356,12 +351,19 @@ class Player
   # I intend to hold some info about the player... like a name or something. Win/loss history maybe?
   def initialize(name)
     @name = name
+    @status = "Moves: "
   end
   attr_reader :name
 
   def play(game, input)
-    game.play(input)
+    game.play(game.convertCoord(input))
+    @status << input + ","
   end
+  
+  def resetStatus
+    @status = "Moves: "
+  end
+  
 end
 
 class AI
@@ -379,7 +381,10 @@ class AI
     # Pass the game along... This method ought to work with any @strategy loaded.
     result = @strategy.playSmartly(game)
     @status << game.convertCoord(result[0]) + "-" + result[1] + ","
-
+  end
+  
+  def resetStatus
+    @status = "Moves: "
   end
 
 end
@@ -440,10 +445,10 @@ def playNAC
           unless petrov_move.length == 2
             raise ArgumentError.new("Invalid Coordinate")
           end
-          petrov.play(game, game.convertCoord(petrov_move))
-        rescue StandardError => e
-          puts e
-          retry
+          petrov.play(game, petrov_move)
+        #rescue StandardError
+         # $stderr.print $!
+          #retry
         end
       end
 

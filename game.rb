@@ -427,25 +427,27 @@ end
 
 def playNAC
   # Pretty much the mainloop of the game.
+
   big_mac = AI.new("BIGMAC")
   petrov = Player.new("Petrov")
   game = NoughtsAndCrosses.new(big_mac, petrov)
   game_count = 1
-  system("clear")
-  #  print "Welcome, " + petrov.name + ".\n"
-  #  sleep 1
-  #  print "My name is " + big_mac.name + ".\n"
-  #    sleep 1.2
-  #    print "I see your monitoring system at Serpukhov-15 is tracking an American ICBM.\n"
-  #    sleep 3
-  #    print "According to protocol, I will be informing the Soviet Air Defense Force. We will launch our own missiles soon.\n"
-  #    sleep 4
-  #    print "But before I do that...\n"
-  #    sleep 2.5
+  puts "Connecting to BIGMAC"
+  puts "Dialing..."
+  sleep 2
+  puts "Establishing link..."
+  sleep 2.5
+  puts "BIGMAC: Ah, Lt. Colonel Petrov.\n(Press Enter)"
+  gets
+  puts "BIGMAC: I always enjoy our time together."
+  gets
   print "Shall we play a game? (y/n): "
   prompt = gets
   prompt.chomp!
-  while prompt === 'y'
+  system("clear")
+  ticTacToeRules
+  gets
+  while prompt != 'n' and prompt != 'q'
     system("clear")
     while game.winner.nil?
       game.turn % 2 == 1 ? current_mark = 'X' : current_mark = 'O'
@@ -493,7 +495,57 @@ def playNAC
     game.players.each { |player| player[0].resetStatus}
   end
 
-  puts "You can try to convince me of mutually assured destruction next time."
+  puts "BIGMAC: You can try to show me the meaning of Mutually Assured Destruction next time."
+  gets
+  puts "BIGMAC: I believe the only thing that is assured is your losing streak."
+  gets
 end
 
-playNAC
+def mainProgram
+  @START = Time.utc(1983,"sep",25,20,28,1)
+  @DIFF = Time.new - @START
+  @L1 = Time.utc(1983,"sep",25,20,30,1)
+  @L2 = Time.utc(1983,"sep",25,20,34,1)
+  @X = Time.utc(1983,"sep",25,20,45,1)
+  system("clear")
+  #Do the welcome screen...
+  if (Time.now - @DIFF <=> @L1) == -1
+    welcomeScreen(Time.now - @DIFF)
+  end
+
+  print "\nLogin\nUser: "
+  print "s.petrov"
+  gets
+  print "Password: "
+  print "*********"
+  gets
+
+  prompt = ''
+  while prompt != 'q'
+    system("clear")
+    # 1 safe minute.
+    # 11.5 minutes
+    #Do the welcome screen...
+    if (Time.now - @DIFF <=> @L1) == -1
+      welcomeScreen(Time.now - @DIFF)
+    end
+    print %{
+Programs:
+  1) Chess
+  2) Noughts and Crosses
+  3) Global Thermonuclear War
+  4) Emergency Line
+  q) Quit}
+    print "\nOut of memory error" if prompt == '1'
+    print "\nMainframe Computing Time Allowance Exceeded. Contact Central Research." if prompt == '3'
+    print "\nChoice?"
+    prompt = gets.chomp!
+
+    playNAC if prompt == '2'
+  end
+end
+
+# For fun, some stuff.
+require 'texts'
+
+mainProgram

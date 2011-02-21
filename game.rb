@@ -163,7 +163,9 @@ class TicTacToeStrategy
       their_mark = 'X'
     end
     # implemented strategies in reverse order of priority.
-    suggested_move = playOpposingCorner(game, my_mark)
+    suggested_move = playEmptyCorner(game, my_mark) # This will occur if, and only if, the player goes first with a center mark.
+    my_move, tactic = suggested_move, 'Empty Corner' unless suggested_move.nil?
+    suggested_move = playOpposingCorner(game, my_mark) # Most of the time this tactic is never utilized. The strategy favors a force.
     my_move, tactic = suggested_move, 'Opposite Corner' unless suggested_move.nil?
     suggested_move = playCenter(game, my_mark)
     my_move, tactic = suggested_move, 'Center' unless suggested_move.nil?
@@ -255,6 +257,15 @@ class TicTacToeStrategy
     when 8 then 0
     end
 
+  end
+
+  def playEmptyCorner(game, mark)
+    corners = [0, 2, 6, 8]
+    empty_corners = []
+    corners.each do |corner|
+      empty_corners << corner if game.board[corner].nil?
+    end
+    empty_corners[rand(empty_corners.length)]
   end
 
   def playRandomly

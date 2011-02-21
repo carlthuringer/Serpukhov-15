@@ -163,6 +163,8 @@ class TicTacToeStrategy
       their_mark = 'X'
     end
     # implemented strategies in reverse order of priority.
+    suggested_move = playOpposingCorner(game, my_mark)
+    my_move, tactic = suggested_move, 'Opposite Corner' unless suggested_move.nil?
     suggested_move = playCenter(game, my_mark)
     my_move, tactic = suggested_move, 'Center' unless suggested_move.nil?
     suggested_move = forceDefense(game, my_mark)
@@ -241,7 +243,20 @@ class TicTacToeStrategy
   def playCenter(game, mark)
     4 if game.board[4].nil?
   end
-  
+
+  def playOpposingCorner(game, mark)
+    corners = [0, 2, 6, 8]
+    mark == 'X' ? opponent_mark = '0' : opponent_mark = 'X'
+    opponent_in_corner = corners.index(opponent_mark)
+    case opponent_in_corner
+    when 0 then 8
+    when 2 then 6
+    when 6 then 2
+    when 8 then 0
+    end
+
+  end
+
   def playRandomly
     # Doesn't get much simpler than this!
     begin

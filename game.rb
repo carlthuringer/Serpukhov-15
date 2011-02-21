@@ -71,30 +71,20 @@ class NoughtsAndCrosses
       # Finally, if we just finished the 9th turn, then @turn will be 10.
       # Therefore, there are no more moves left. Check to see if @winner is still nil.
       # If both are true, then that's it. Set winner to a tie game.
-      @turn > 9 and @winner.nil? ? @winner =  {'winner' => 'tie', 'mark' => 'tie' } : nil
+      @turn > 9 and @winner.nil? ? @winner =  'tie' : nil
     end
   end
 
   def checkWinner
-    # A simple iterator/index with If statements. This is not much shorter than an explicit test for all 6 row/columns.
-    # I don't think these lines are long enough. Maybe I should do it with ternary operators. >:)
-    #Columns and rows
-    (0..2).each do |index|
-      #columns
-      if @current_game_board[index] == @current_game_board[index+3] and @current_game_board[index] == @current_game_board[index + 6] and not @current_game_board[index].nil?
-        #All that matters is we identify the symbol we're testing for concurrence in a row or column.
-        @winner = { 'winner' => @players[@turn - 1 % 2][0], 'mark' => @current_game_board[index] }
+    board_slices = winSlicer
+    board_slices.each_index do |index|
+      if board_slices[index].uniq.length == 1 and not board_slices[index][0].nil?
+        if @turn % 2 == 0
+          @winner = @players[1][0]
+        else
+          @winner = @players[0][0]
+        end
       end
-      #rows
-      if @current_game_board[3 * index] == @current_game_board[(3 * index) + 1] and @current_game_board[3 * index] == @current_game_board[(3 * index) + 2] and not @current_game_board[3 * index].nil?
-        @winner = { 'winner' => @players[@turn - 1 % 2][0], 'mark' => @current_game_board[3 * index] }
-      end
-    end
-    #Diagonals. These are explicit. There are only two diagonals on a 3x3 board. If the board size wasn't fixed, this would be an iterator as well.
-    if @current_game_board[0] == @current_game_board[4] and @current_game_board[0] == @current_game_board[8] and not @current_game_board[0].nil?
-      @winner = { 'winner' => @players[@turn - 1 % 2][0], 'mark' => @current_game_board[0] }
-    elsif @current_game_board[6] == @current_game_board[4] and @current_game_board[6] == @current_game_board[2] and not @current_game_board[6].nil?
-      @winner = { 'winner' => @players[@turn - 1 % 2][0], 'mark' => @current_game_board[6] }
     end
   end
 
@@ -454,10 +444,10 @@ def playNAC
     puts "Player " + game.players[1][1] + ": " + game.players[1][0].name + "; " + game.players[1][0].status + "\n\n"
     simpleDraw(game.board)
 
-    if game.winner['winner'] == 'tie'
+    if game.winner == 'tie'
       puts "There was no winner this time."
     else
-      puts "The winner was " + game.winner['winner'].name + " with '" + game.winner['mark'] + "'\n"
+      puts "The winner was " + game.winner.name + "'\n"
     end
     print "Play again? (y/n): "
     prompt = gets

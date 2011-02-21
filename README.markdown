@@ -24,4 +24,5 @@ The 'game' would be mostly psychological. The player must ignore the warning of 
 The goal would be to place players in the shoes of Stanislav Petrov for the terrifying 15 minutes of waiting. With nothing to do but play tic-tac-toe against a computer that wonders about your sanity, motives, trust in technology, and so on. All delivered via the medium of clever, intermittent dialogue.
 
 If players hit the emergency line before the time is up, then the game is over, everybody is mutually destroyed.
-   
+
+Oh, and there are some jokes. Can you spot them all?   

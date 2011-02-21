@@ -89,6 +89,7 @@ class NoughtsAndCrosses
   end
 
   def winSlicer
+    # winslicer ref: 0 = h1, 1 = h2, 2 = h3, 3 = v1, 4 = v2, 5 = v3, 6 = d\ 7 = d/
     board_slices = [
       @current_game_board.board[0, 3],
       @current_game_board.board[3, 3],
@@ -99,6 +100,10 @@ class NoughtsAndCrosses
       [@current_game_board.board[0], @current_game_board.board[4], @current_game_board.board[8]],
       [@current_game_board.board[6], @current_game_board.board[4], @current_game_board.board[2]]
     ]
+  end
+
+  def checkTie
+
   end
 
   def newGame
@@ -180,11 +185,13 @@ class TicTacToeStrategy
     # Tactics Legend
     # B: Block opponent's win
     # C: Play random corner
+    # D: Force opponent to defend
     # E: Play center
-    # F: Force opponent to defend
+    # F: Set up a fork
     # O: Play opposite corner
     # R: Random Play
     # S: Play random side
+    # T: Stop a fork in progress
     # W: Win
 
     # Play an empty side
@@ -193,15 +200,21 @@ class TicTacToeStrategy
     # Play an empty corner
     suggested_move = playEmptyCorner(game, my_mark)
     my_move, tactic = suggested_move, 'C' unless suggested_move.nil?
-    # Play the center
-    suggested_move = playCenter(game, my_mark)
-    my_move, tactic = suggested_move, 'E' unless suggested_move.nil?
     # Play corner opposite the opponent's corner mark.
     suggested_move = playOpposingCorner(game, my_mark)
     my_move, tactic = suggested_move, 'O' unless suggested_move.nil?
+    # Play the center
+    suggested_move = playCenter(game, my_mark)
+    my_move, tactic = suggested_move, 'E' unless suggested_move.nil?
     # Make a play that forces opponent to defend.
     suggested_move = forceDefense(game, my_mark)
+    my_move, tactic = suggested_move, 'D' unless suggested_move.nil?
+    # Set up a fork
+    suggested_move = forkYou(game, my_mark)
     my_move, tactic = suggested_move, 'F' unless suggested_move.nil?
+    # Block opponent's fork
+    suggested_move = stopFork(game, my_mark)
+    my_move, tactic = suggested_move, 'T' unless suggested_move.nil?
     # Play opponent's winning move. Blocking it.
     suggested_move = checkForWin(game, their_mark)
     my_move, tactic = suggested_move, 'B' unless suggested_move.nil?
@@ -284,7 +297,30 @@ class TicTacToeStrategy
 
   def stopFork(game, mark)
     # Well. This requires the program to look into the future.
-    # A fork requires two unopposed moves. It can be prevented
+    # There are exactly two fork defense scenarios for player 2.
+    # X has always taken a center and a corner when preparing to fork.
+    # One: X marked a corner. You took center. X is in opposite corner.You must play a side to prevent the fork.
+    # Two: X marked the center. You took a corner. You must play a corner to prevent the fork.
+    board_slices = game.winSlicer
+    # winslicer ref: 0 = h1, 1 = h2, 2 = h3, 3 = v1, 4 = v2, 5 = v3, 6 = d\ 7 = d/
+    if board_slices[6].compact.length == 3 or board_slices[7].compact.length == 3
+      case game.board.index(mark)
+      when 4 then return playEmptySide(game, mark)
+      else return playEmptyCorner(game, mark)
+      end
+    else return nil
+    end
+  end
+
+  def forkYou(game, mark)
+    # See what I did there?
+    if game.turn == 3
+      case game.board.index(mark)
+      when 4 then return playOpposingCorner(game, mark)
+      else return playCenter(game, mark) if game.board[4].nil?
+      end
+    else return nil
+    end
   end
 
   def playCenter(game, mark)

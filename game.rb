@@ -163,14 +163,15 @@ class TicTacToeStrategy
       their_mark = 'X'
     end
     # implemented strategies in reverse order of priority.
+    suggested_move = forceDefense(game, my_mark)
+    my_move, tactic = suggested_move, 'Force' unless suggested_move.nil?
     suggested_move = playEmptyCorner(game, my_mark) # This will occur if, and only if, the player goes first with a center mark.
     my_move, tactic = suggested_move, 'Empty Corner' unless suggested_move.nil?
-    suggested_move = playOpposingCorner(game, my_mark) # Most of the time this tactic is never utilized. The strategy favors a force.
+    suggested_move = playOpposingCorner(game, my_mark)
     my_move, tactic = suggested_move, 'Opposite Corner' unless suggested_move.nil?
     suggested_move = playCenter(game, my_mark)
     my_move, tactic = suggested_move, 'Center' unless suggested_move.nil?
-    suggested_move = forceDefense(game, my_mark)
-    my_move, tactic = suggested_move, 'Force' unless suggested_move.nil?
+
     suggested_move = checkForWin(game, their_mark)
     my_move, tactic = suggested_move, 'Block' unless suggested_move.nil?
     suggested_move = checkForWin(game, my_mark)
@@ -234,12 +235,19 @@ class TicTacToeStrategy
     unless target['slice'].nil?
       # Translate all the 'openinigs' into an array index.
       case target['slice']
-      when 0..2 then target['slice'] * 3 + target['opening']
-      when 3..5 then (target['slice'] - 4) + (target['opening'] * 3) + 1
-      when 6 then target['opening'] * 4
-      when 7 then 6 - (target['opening'] * 2)
+      when 0..2 then return target['slice'] * 3 + target['opening']
+      when 3..5 then return (target['slice'] - 4) + (target['opening'] * 3) + 1
+      when 6 then return target['opening'] * 4
+      when 7 then return 6 - (target['opening'] * 2)
       end
+    else
+      return nil
     end
+  end
+
+  def stopFork(game, mark)
+    # Well. This requires the program to look into the future.
+    # A fork requires two unopposed moves. It can be prevented
   end
 
   def playCenter(game, mark)
@@ -248,13 +256,15 @@ class TicTacToeStrategy
 
   def playOpposingCorner(game, mark)
     corners = [0, 2, 6, 8]
-    mark == 'X' ? opponent_mark = '0' : opponent_mark = 'X'
-    opponent_in_corner = corners.index(opponent_mark)
+    mark == 'X' ? opponent_mark = 'O' : opponent_mark = 'X'
+    opponent_in_corner = game.board.index(opponent_mark)
     case opponent_in_corner
-    when 0 then 8
-    when 2 then 6
-    when 6 then 2
-    when 8 then 0
+    when 0 then return 8 if game.board[8].nil?
+    when 2 then return 6 if game.board[6].nil?
+    when 6 then return 2 if game.board[2].nil?
+    when 8 then return 0 if game.board[0].nil?
+    else
+      return nil
     end
 
   end
@@ -266,6 +276,15 @@ class TicTacToeStrategy
       empty_corners << corner if game.board[corner].nil?
     end
     empty_corners[rand(empty_corners.length)]
+  end
+
+  def playEmptySide(game, mark)
+    sides = [1, 3, 5, 7]
+    empty_sides = []
+    sides.each do |side|
+      empty_sides << side if game.board[side].nil?
+    end
+    empty_sides[rand(empty_sides.length)]
   end
 
   def playRandomly

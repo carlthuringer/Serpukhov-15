@@ -141,10 +141,10 @@ class NoughtsAndCrosses
 
     case coord.length
     when 1
-      return coord
+      return translation_matrix[coord.to_i]
     when 2
       new = 0
-      if translation_matrix.index(coord)
+      if translation_matrix.index(coord) or translation_matrix.index(coord.reverse)
         translation_matrix.each_index do |index|
           if coord == translation_matrix[index] or coord.reverse == translation_matrix[index]
             new = index
@@ -190,22 +190,41 @@ class TicTacToeStrategy
       their_mark = 'X'
     end
     # implemented strategies in reverse order of priority.
-    suggested_move = forceDefense(game, my_mark)
-    my_move, tactic = suggested_move, 'Force' unless suggested_move.nil?
-    suggested_move = playEmptyCorner(game, my_mark) # This will occur if, and only if, the player goes first with a center mark.
-    my_move, tactic = suggested_move, 'Empty Corner' unless suggested_move.nil?
-    suggested_move = playOpposingCorner(game, my_mark)
-    my_move, tactic = suggested_move, 'Opposite Corner' unless suggested_move.nil?
+    # Tactics Legend
+    # B: Block opponent's win
+    # C: Play random corner
+    # E: Play center
+    # F: Force opponent to defend
+    # O: Play opposite corner
+    # R: Random Play
+    # S: Play random side
+    # W: Win
+
+    # Play an empty side
+    suggested_move = playEmptySide(game, my_mark)
+    my_move, tactic = suggested_move, 'S' unless suggested_move.nil?
+    # Play an empty corner
+    suggested_move = playEmptyCorner(game, my_mark)
+    my_move, tactic = suggested_move, 'C' unless suggested_move.nil?
+    # Play the center
     suggested_move = playCenter(game, my_mark)
-    my_move, tactic = suggested_move, 'Center' unless suggested_move.nil?
+    my_move, tactic = suggested_move, 'E' unless suggested_move.nil?
+    # Play corner opposite the opponent's corner mark.
+    suggested_move = playOpposingCorner(game, my_mark)
+    my_move, tactic = suggested_move, 'O' unless suggested_move.nil?
+    # Make a play that forces opponent to defend.
+    suggested_move = forceDefense(game, my_mark)
+    my_move, tactic = suggested_move, 'F' unless suggested_move.nil?
+    # Play opponent's winning move. Blocking it.
     suggested_move = checkForWin(game, their_mark)
-    my_move, tactic = suggested_move, 'Block' unless suggested_move.nil?
+    my_move, tactic = suggested_move, 'B' unless suggested_move.nil?
+    # Play own winning move.
     suggested_move = checkForWin(game, my_mark)
-    my_move, tactic = suggested_move, 'Game' unless suggested_move.nil?
+    my_move, tactic = suggested_move, 'W' unless suggested_move.nil?
 
     unless my_move.nil?
       game.play(my_move)
-      return "Move: " + my_move.to_s + ", Tactic: " + tactic
+      return [ my_move, tactic ]
 
     else
       begin
@@ -214,7 +233,7 @@ class TicTacToeStrategy
       rescue
         retry
       end
-      return "Move: " + my_move.to_s + ", Tactic: Random"
+      return [ my_move, 'R' ]
     end
   end
 
@@ -353,12 +372,13 @@ class AI
   def initialize(name)
     @name = name
     @strategy = TicTacToeStrategy.new
-    @status = ""
+    @status = "Moves: "
   end
 
   def play(game)
     # Pass the game along... This method ought to work with any @strategy loaded.
-    @status = @strategy.playSmartly(game)
+    result = @strategy.playSmartly(game)
+    @status << game.convertCoord(result[0]) + "-" + result[1] + ","
 
   end
 
@@ -415,8 +435,12 @@ def playNAC
           puts "Player " + current_mark + ": " + petrov.name + ";\n\n"
           simpleDraw(game.board)
           puts e
-          print "\nWhat is the coordinate of your next move? "
-          petrov.play(game, game.convertCoord(gets.chomp!))
+          print "What is the coordinate of your next move? "
+          petrov_move = gets.chomp!
+          unless petrov_move.length == 2
+            raise ArgumentError.new("Invalid Coordinate")
+          end
+          petrov.play(game, game.convertCoord(petrov_move))
         rescue StandardError => e
           puts e
           retry
@@ -424,13 +448,16 @@ def playNAC
       end
 
     end
+    system("clear")
+    puts "Game " + game_count.to_s
+    puts "Player " + current_mark + ": " + big_mac.name + "; " + big_mac.status + "\n"
+    puts "Player " + current_mark + ": " + petrov.name + ";\n\n"
+    simpleDraw(game.board)
 
     if game.winner['winner'] == 'tie'
-      puts "There was no winner this time. The state of the board was:"
-      simpleDraw(game.board)
+      puts "There was no winner this time."
     else
-      puts "The winner was " + game.winner['winner'] + " with '" + game.winner['mark'] + "' and the state of the board was:"
-      simpleDraw(game.board)
+      puts "The winner was " + game.winner['winner'].name + " with '" + game.winner['mark'] + "'\n"
     end
     print "Play again? (y/n): "
     prompt = gets

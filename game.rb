@@ -26,8 +26,7 @@ class GameBoard
     if @board[address].nil?
       @board[address] = symbol
     else
-      # TODO Make this work. We don't allow places to be overwritten. In some potential future, an 'erase' method followed by a 'mark' method will accomplish this.
-      raise
+      raise ArgumentError.new("Location is already marked.")
     end
   end
 end
@@ -131,6 +130,34 @@ class NoughtsAndCrosses
     @turn = 1
 
   end
+
+  def convertCoord(coord)
+    coord = coord.to_s.upcase
+    translation_matrix = [
+      "A1", "B1", "C1",
+      "A2", "B2", "C2",
+      "A3", "B3", "C3"
+    ]
+
+    case coord.length
+    when 1
+      return coord
+    when 2
+      new = 0
+      if translation_matrix.index(coord)
+        translation_matrix.each_index do |index|
+          if coord == translation_matrix[index] or coord.reverse == translation_matrix[index]
+            new = index
+            return new
+          end
+        end
+      else
+        raise ArgumentError.new("Your coordinate was invalid.")
+      end
+    end
+
+  end
+
 end
 
 class TicTacToeStrategy
@@ -171,21 +198,23 @@ class TicTacToeStrategy
     my_move, tactic = suggested_move, 'Opposite Corner' unless suggested_move.nil?
     suggested_move = playCenter(game, my_mark)
     my_move, tactic = suggested_move, 'Center' unless suggested_move.nil?
-
     suggested_move = checkForWin(game, their_mark)
     my_move, tactic = suggested_move, 'Block' unless suggested_move.nil?
     suggested_move = checkForWin(game, my_mark)
     my_move, tactic = suggested_move, 'Game' unless suggested_move.nil?
-    print "Tactic: " + tactic + "\nMy Move: " + my_move.to_s + "\n" unless tactic.nil? or my_move.nil?
-    unless my_move.nil?
 
+    unless my_move.nil?
       game.play(my_move)
+      return "Move: " + my_move.to_s + ", Tactic: " + tactic
+
     else
       begin
-        game.play(playRandomly)
+        my_move = playRandomly # Legacy last-ditch effort.
+        game.play(my_move)
       rescue
         retry
       end
+      return "Move: " + my_move.to_s + ", Tactic: Random"
     end
   end
 
@@ -209,11 +238,13 @@ class TicTacToeStrategy
     unless target['slice'].nil?
       # Translate all the 'openinigs' into an array index.
       case target['slice']
-      when 0..2 then target['slice'] * 3 + target['opening']
-      when 3..5 then (target['slice'] - 4) + (target['opening'] * 3) + 1
-      when 6 then target['opening'] * 4
-      when 7 then 6 - (target['opening'] * 2)
+      when 0..2 then return target['slice'] * 3 + target['opening']
+      when 3..5 then return (target['slice'] - 4) + (target['opening'] * 3) + 1
+      when 6 then return target['opening'] * 4
+      when 7 then return 6 - (target['opening'] * 2)
       end
+    else
+      return nil
     end
   end
 
@@ -275,7 +306,11 @@ class TicTacToeStrategy
     corners.each do |corner|
       empty_corners << corner if game.board[corner].nil?
     end
-    empty_corners[rand(empty_corners.length)]
+    if empty_corners[0].nil?
+      nil
+    else
+      return empty_corners[rand(empty_corners.length)]
+    end
   end
 
   def playEmptySide(game, mark)
@@ -284,16 +319,16 @@ class TicTacToeStrategy
     sides.each do |side|
       empty_sides << side if game.board[side].nil?
     end
-    empty_sides[rand(empty_sides.length)]
+    if empty_sides[0].nil?
+      nil
+    else
+      return empty_sides[rand(empty_sides.length)]
+    end
   end
 
   def playRandomly
     # Doesn't get much simpler than this!
-    begin
-      return rand(9)
-    rescue
-      retry
-    end
+    return rand(9)
   end
 
 end
@@ -314,15 +349,16 @@ class AI
   #Class that will have some methods and stuff, planning ahead for a much more interesting AI character.
   # Might be good to make this a child of the Player class?
   # If more games are implemented, I'll want to have it load strategies dynamically.
+  attr_reader :name, :status
   def initialize(name)
     @name = name
     @strategy = TicTacToeStrategy.new
+    @status = ""
   end
-  attr_reader :name
 
   def play(game)
     # Pass the game along... This method ought to work with any @strategy loaded.
-    @strategy.playSmartly(game)
+    @status = @strategy.playSmartly(game)
 
   end
 
@@ -331,62 +367,58 @@ end
 def simpleDraw(board)
   # The collect method is used to find and replace in an array. In this case, find Nil, replace with " ".
   clean_board = board.collect { |obj| obj.nil? ? " " : obj }
+  print "   A  B  C\n"
   3.times { |index|
+    row = index + 1
+    print row.to_s + " "
     # Array[index, length]. It's a good thing. Spit this out thrice and it almost looks like a tic tac toe board!
-    p clean_board[3 * index, 3]
-  }
-end
-
-def testThis
-  # Leftover stuff. I have the feeling that I'll be reusing this, so I stuffed it into a method.
-  # Some of this will probably make it into the playNAC method.
-  game_a = NoughtsAndCrosses.new
-  game_b = NoughtsAndCrosses.new
-  game_c = NoughtsAndCrosses.new
-  test_games = []
-  test_games << game_a << game_b << game_c
-  test_games.each { |game|
-    while game.winner.nil?
-      game.play(rand(9))
+    clean_board[3 * index, 3].each do |cell|
+      print "[" + cell + "]"
     end
-  }
-  test_games.each { |game|
-
+    print "\n"
   }
 end
 
 def playNAC
   # Pretty much the mainloop of the game.
-  reference_board = (0..9).to_a # For player input.
   big_mac = AI.new("BIGMAC")
   petrov = Player.new("Petrov")
-  game = NoughtsAndCrosses.new(big_mac.name, petrov.name)
+  game = NoughtsAndCrosses.new(big_mac, petrov)
+  game_count = 1
   system("clear")
+  #  print "Welcome, " + petrov.name + ".\n"
+  #  sleep 1
+  #  print "My name is " + big_mac.name + ".\n"
+  #    sleep 1.2
+  #    print "I see your monitoring system at Serpukhov-15 is tracking an American ICBM.\n"
+  #    sleep 3
+  #    print "According to protocol, I will be informing the Soviet Air Defense Force. We will launch our own missiles soon.\n"
+  #    sleep 4
+  #    print "But before I do that...\n"
+  #    sleep 2.5
   print "Shall we play a game? (y/n): "
   prompt = gets
   prompt.chomp!
   while prompt === 'y'
     system("clear")
     while game.winner.nil?
-      # Alright, so...
-      # Who goes first?
-      # Draw the game board.
-      # Get some input, or do AI's turn.
-      # Repeat
-      # ...?
-      # Profit!
+      game.turn % 2 == 1 ? current_mark = 'X' : current_mark = 'O'
       case game.currentPlayer
-      when big_mac.name
+      when big_mac
         big_mac.play(game)
-      when petrov.name
+      when petrov
+        e = ""
         begin
+          system("clear")
+          puts "Game " + game_count.to_s
+          puts "Player " + current_mark + ": " + big_mac.name + "; " + big_mac.status + "\n"
+          puts "Player " + current_mark + ": " + petrov.name + ";\n\n"
           simpleDraw(game.board)
-          puts "Reference Board:"
-          simpleDraw(reference_board)
-          print "Input the number of the space you will mark: "
-          petrov.play(game, gets.to_i)
-        rescue
-          puts "That place is already marked. Try again."
+          puts e
+          print "\nWhat is the coordinate of your next move? "
+          petrov.play(game, game.convertCoord(gets.chomp!))
+        rescue StandardError => e
+          puts e
           retry
         end
       end
@@ -403,10 +435,11 @@ def playNAC
     print "Play again? (y/n): "
     prompt = gets
     prompt.chomp!
+    game_count += 1
     game.newGame
   end
 
-  puts big_mac.name + ": You can try to convince me of mutually assured destruction next time."
+  puts "You can try to convince me of mutually assured destruction next time."
 end
 
 playNAC

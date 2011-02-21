@@ -495,9 +495,9 @@ def playNAC
     game.players.each { |player| player[0].resetStatus}
   end
 
-  puts "BIGMAC: You can try to show me the meaning of Mutually Assured Destruction next time."
+  puts "BIGMAC: I suppose you can try to show me the meaning of Mutually Assured Destruction another time."
   gets
-  puts "BIGMAC: I believe the only thing that is assured is your losing streak."
+  puts "BIGMAC: But I believe the only thing that is assured is your losing streak."
   gets
 end
 

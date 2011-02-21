@@ -38,7 +38,7 @@ class NoughtsAndCrosses
   # Players alternate, with X going first. Each player makes a single mark in an unmarked space.
   # To achieve a win, a player must place the last symbol to form a row, column or diagonal of concurrent, identical symbols.
   # If neither player has achieved a win by the 9th turn, the game ends in a tie.
-  attr_reader :winner, :board, :turn
+  attr_reader :winner, :board, :turn, :players
   def initialize(player1, player2)
     @current_game_board = GameBoard.new
     @winner = nil
@@ -53,7 +53,8 @@ class NoughtsAndCrosses
   def currentPlayer
     # As you'll see later, the players array is reversed to facilitate the switching of the current player.
     # I think this is clever, and that it will also be more trouble than it was worth. :D
-    @players[0][0]
+    # Edit: IT WAS. O_O
+    @turn % 2 == 0 ? @players[1][0] : @players[0][0]
   end
 
   def play(address)
@@ -65,9 +66,8 @@ class NoughtsAndCrosses
       @turn % 2 == 0 ? @current_game_board.mark('O', address) : @current_game_board.mark('X', address)
       # Just marked up the board. Check for a winner.
       checkWinner
-      # That's one turn. Turn counter + 1. Switch players!
+      # That's one turn. Turn counter + 1.
       @turn += 1
-      @players.reverse!
       # Finally, if we just finished the 9th turn, then @turn will be 10.
       # Therefore, there are no more moves left. Check to see if @winner is still nil.
       # If both are true, then that's it. Set winner to a tie game.
@@ -83,18 +83,18 @@ class NoughtsAndCrosses
       #columns
       if @current_game_board[index] == @current_game_board[index+3] and @current_game_board[index] == @current_game_board[index + 6] and not @current_game_board[index].nil?
         #All that matters is we identify the symbol we're testing for concurrence in a row or column.
-        @winner = { 'winner' => @players[0], 'mark' => @current_game_board[index] }
+        @winner = { 'winner' => @players[@turn - 1 % 2][0], 'mark' => @current_game_board[index] }
       end
       #rows
       if @current_game_board[3 * index] == @current_game_board[(3 * index) + 1] and @current_game_board[3 * index] == @current_game_board[(3 * index) + 2] and not @current_game_board[3 * index].nil?
-        @winner = { 'winner' => @players[0], 'mark' => @current_game_board[3 * index] }
+        @winner = { 'winner' => @players[@turn - 1 % 2][0], 'mark' => @current_game_board[3 * index] }
       end
     end
     #Diagonals. These are explicit. There are only two diagonals on a 3x3 board. If the board size wasn't fixed, this would be an iterator as well.
     if @current_game_board[0] == @current_game_board[4] and @current_game_board[0] == @current_game_board[8] and not @current_game_board[0].nil?
-      @winner = { 'winner' => @players[0], 'mark' => @current_game_board[0] }
+      @winner = { 'winner' => @players[@turn - 1 % 2][0], 'mark' => @current_game_board[0] }
     elsif @current_game_board[6] == @current_game_board[4] and @current_game_board[6] == @current_game_board[2] and not @current_game_board[6].nil?
-      @winner = { 'winner' => @players[0], 'mark' => @current_game_board[6] }
+      @winner = { 'winner' => @players[@turn - 1 % 2][0], 'mark' => @current_game_board[6] }
     end
   end
 
@@ -122,6 +122,8 @@ class NoughtsAndCrosses
     @winner = nil
     @turn = 1
     @player1, @player2 = @player2, @player1
+    @player1[1] = 'X'
+    @player2[1] = 'O'
     @players= [@player1, @player2]
 
   end
@@ -353,28 +355,26 @@ class Player
     @name = name
     @status = "Moves: "
   end
-  attr_reader :name
+  attr_reader :name, :status
 
   def play(game, input)
     game.play(game.convertCoord(input))
     @status << input + ","
   end
-  
+
   def resetStatus
     @status = "Moves: "
   end
-  
+
 end
 
-class AI
+class AI < Player
   #Class that will have some methods and stuff, planning ahead for a much more interesting AI character.
   # Might be good to make this a child of the Player class?
   # If more games are implemented, I'll want to have it load strategies dynamically.
-  attr_reader :name, :status
   def initialize(name)
-    @name = name
+    super name
     @strategy = TicTacToeStrategy.new
-    @status = "Moves: "
   end
 
   def play(game)
@@ -382,11 +382,6 @@ class AI
     result = @strategy.playSmartly(game)
     @status << game.convertCoord(result[0]) + "-" + result[1] + ","
   end
-  
-  def resetStatus
-    @status = "Moves: "
-  end
-
 end
 
 def simpleDraw(board)
@@ -436,8 +431,8 @@ def playNAC
         begin
           system("clear")
           puts "Game " + game_count.to_s
-          puts "Player " + current_mark + ": " + big_mac.name + "; " + big_mac.status + "\n"
-          puts "Player " + current_mark + ": " + petrov.name + ";\n\n"
+          puts "Player " + game.players[0][1] + ": " + game.players[0][0].name + "; " + game.players[0][0].status + "\n"
+          puts "Player " + game.players[1][1] + ": " + game.players[1][0].name + "; " + game.players[1][0].status + "\n\n"
           simpleDraw(game.board)
           puts e
           print "What is the coordinate of your next move? "
@@ -446,8 +441,8 @@ def playNAC
             raise ArgumentError.new("Invalid Coordinate")
           end
           petrov.play(game, petrov_move)
-        #rescue StandardError
-         # $stderr.print $!
+          #rescue StandardError
+          # $stderr.print $!
           #retry
         end
       end
@@ -455,8 +450,8 @@ def playNAC
     end
     system("clear")
     puts "Game " + game_count.to_s
-    puts "Player " + current_mark + ": " + big_mac.name + "; " + big_mac.status + "\n"
-    puts "Player " + current_mark + ": " + petrov.name + ";\n\n"
+    puts "Player " + game.players[0][1] + ": " + game.players[0][0].name + "; " + game.players[0][0].status + "\n"
+    puts "Player " + game.players[1][1] + ": " + game.players[1][0].name + "; " + game.players[1][0].status + "\n\n"
     simpleDraw(game.board)
 
     if game.winner['winner'] == 'tie'
@@ -469,6 +464,7 @@ def playNAC
     prompt.chomp!
     game_count += 1
     game.newGame
+    game.players.each { |player| player[0].resetStatus}
   end
 
   puts "You can try to convince me of mutually assured destruction next time."

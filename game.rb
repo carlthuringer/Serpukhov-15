@@ -163,12 +163,14 @@ class TicTacToeStrategy
       their_mark = 'X'
     end
     # implemented strategies in reverse order of priority.
+    suggested_move = playCenter(game, my_mark)
+    my_move, tactic = suggested_move, 'Center' unless suggested_move.nil?
     suggested_move = forceDefense(game, my_mark)
-    my_move, tactic = suggested_move, 'Force Defense' unless suggested_move.nil?
+    my_move, tactic = suggested_move, 'Force' unless suggested_move.nil?
     suggested_move = checkForWin(game, their_mark)
-    my_move, tactic = suggested_move, 'Block You' unless suggested_move.nil?
+    my_move, tactic = suggested_move, 'Block' unless suggested_move.nil?
     suggested_move = checkForWin(game, my_mark)
-    my_move, tactic = suggested_move, 'Win Game' unless suggested_move.nil?
+    my_move, tactic = suggested_move, 'Game' unless suggested_move.nil?
     print "Tactic: " + tactic + "\nMy Move: " + my_move.to_s + "\n" unless tactic.nil? or my_move.nil?
     unless my_move.nil?
 
@@ -236,9 +238,12 @@ class TicTacToeStrategy
     end
   end
 
+  def playCenter(game, mark)
+    4 if game.board[4].nil?
+  end
+  
   def playRandomly
     # Doesn't get much simpler than this!
-    # TODO error handling for :inputerror.
     begin
       return rand(9)
     rescue
@@ -356,7 +361,7 @@ def playNAC
     game.newGame
   end
 
-  puts "You can try to convince me of mutually assured destruction next time.\nBut be warned, in U.S.S.R, game destroys you!"
+  puts big_mac.name + ": You can try to convince me of mutually assured destruction next time."
 end
 
 playNAC

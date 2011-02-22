@@ -510,7 +510,7 @@ def mainProgram
   system("clear")
   #Do the welcome screen...
   if (Time.now - @DIFF <=> @L1) == -1
-    welcomeScreen(Time.now - @DIFF)
+    # welcomeScreen(Time.now - @DIFF)
   end
 
   print "\nLogin\nUser: "
@@ -527,7 +527,7 @@ def mainProgram
     # 11.5 minutes
     #Do the welcome screen...
     if (Time.now - @DIFF <=> @L1) == -1
-      welcomeScreen(Time.now - @DIFF)
+     # welcomeScreen(Time.now - @DIFF)
     end
     print %{
 Programs:
@@ -546,6 +546,6 @@ Programs:
 end
 
 # For fun, some stuff.
-require 'texts'
+# require 'texts'
 
 mainProgram

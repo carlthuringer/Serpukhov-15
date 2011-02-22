@@ -469,9 +469,9 @@ def playNAC
             raise ArgumentError.new("Invalid Coordinate")
           end
           petrov.play(game, petrov_move)
-          #rescue StandardError
-          # $stderr.print $!
-          #retry
+          rescue StandardError
+           $stderr.print $!
+          retry
         end
       end
 

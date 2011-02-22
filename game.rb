@@ -432,11 +432,11 @@ def playNAC
   petrov = Player.new("Petrov")
   game = NoughtsAndCrosses.new(big_mac, petrov)
   game_count = 1
-  puts "Connecting to BIGMAC"
-  puts "Dialing..."
-  sleep 2
-  puts "Establishing link..."
-  sleep 2.5
+  #puts "Connecting to BIGMAC"
+  #puts "Dialing..."
+  #sleep 2
+  #puts "Establishing link..."
+  #sleep 2.5
   puts "BIGMAC: Ah, Lt. Colonel Petrov.\n(Press Enter)"
   gets
   puts "BIGMAC: I always enjoy our time together."
@@ -445,8 +445,8 @@ def playNAC
   prompt = gets
   prompt.chomp!
   system("clear")
-  ticTacToeRules
-  gets
+  # ticTacToeRules
+  # gets
   while prompt != 'n' and prompt != 'q'
     system("clear")
     while game.winner.nil?
@@ -513,12 +513,12 @@ def mainProgram
     # welcomeScreen(Time.now - @DIFF)
   end
 
-  print "\nLogin\nUser: "
-  print "s.petrov"
-  gets
-  print "Password: "
-  print "*********"
-  gets
+  #print "\nLogin\nUser: "
+  #print "s.petrov"
+  #gets
+  #print "Password: "
+  #print "*********"
+  #gets
 
   prompt = ''
   while prompt != 'q'

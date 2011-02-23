@@ -432,11 +432,11 @@ def playNAC
   petrov = Player.new("Petrov")
   game = NoughtsAndCrosses.new(big_mac, petrov)
   game_count = 1
-  #puts "Connecting to BIGMAC"
-  #puts "Dialing..."
-  #sleep 2
-  #puts "Establishing link..."
-  #sleep 2.5
+  puts "Connecting to BIGMAC"
+  puts "Dialing..."
+  sleep 2
+  puts "Establishing link..."
+  sleep 2.5
   puts "BIGMAC: Ah, Lt. Colonel Petrov.\n(Press Enter)"
   gets
   puts "BIGMAC: I always enjoy our time together."
@@ -509,16 +509,16 @@ def mainProgram
   @X = Time.utc(1983,"sep",25,20,45,1)
   system("clear")
   #Do the welcome screen...
-  if (Time.now - @DIFF <=> @L1) == -1
-    # welcomeScreen(Time.now - @DIFF)
-  end
+  #if (Time.now - @DIFF <=> @L1) == -1
+     welcomeScreen(Time.now - @DIFF)
+  #end
 
-  #print "\nLogin\nUser: "
-  #print "s.petrov"
-  #gets
-  #print "Password: "
-  #print "*********"
-  #gets
+  print "\nLogin\nUser: "
+  print "s.petrov"
+  gets
+  print "Password: "
+  print "*********"
+  gets
 
   prompt = ''
   while prompt != 'q'
@@ -526,9 +526,9 @@ def mainProgram
     # 1 safe minute.
     # 11.5 minutes
     #Do the welcome screen...
-    if (Time.now - @DIFF <=> @L1) == -1
-     # welcomeScreen(Time.now - @DIFF)
-    end
+    #if (Time.now - @DIFF <=> @L1) == -1
+      welcomeScreen(Time.now - @DIFF)
+    #end
     print %{
 Programs:
   1) Chess
@@ -546,6 +546,6 @@ Programs:
 end
 
 # For fun, some stuff.
-# require 'texts'
+require 'texts'
 
 mainProgram

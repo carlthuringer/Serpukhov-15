@@ -514,7 +514,7 @@ def mainProgram
   #end
 
   print "\nLogin\nUser: "
-  print "s.petrov"
+  print "s.petrov\n(Press Enter)"
   gets
   print "Password: "
   print "*********"

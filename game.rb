@@ -31,16 +31,16 @@ class GameBoard
   end
 
   def boardSlicer
-    # winslicer ref: 0 = h1, 1 = h2, 2 = h3, 3 = v1, 4 = v2, 5 = v3, 6 = d\ 7 = d/
+    # boardSlicer ref: 0 = h1, 1 = h2, 2 = h3, 3 = v1, 4 = v2, 5 = v3, 6 = d\ 7 = d/
     board_slices = [
-      @current_game_board.board[0, 3],
-      @current_game_board.board[3, 3],
-      @current_game_board.board[6, 3],
-      [@current_game_board.board[0], @current_game_board.board[3], @current_game_board.board[6]],
-      [@current_game_board.board[1], @current_game_board.board[4], @current_game_board.board[7]],
-      [@current_game_board.board[2], @current_game_board.board[5], @current_game_board.board[8]],
-      [@current_game_board.board[0], @current_game_board.board[4], @current_game_board.board[8]],
-      [@current_game_board.board[6], @current_game_board.board[4], @current_game_board.board[2]]
+      @board[0, 3],
+      @board[3, 3],
+      @board[6, 3],
+      [@board[0], @board[3], @board[6]],
+      [@board[1], @board[4], @board[7]],
+      [@board[2], @board[5], @board[8]],
+      [@board[0], @board[4], @board[8]],
+      [@board[6], @board[4], @board[2]]
     ]
   end
 
@@ -79,41 +79,48 @@ class NoughtsAndCrosses
     if @winner.nil? && @turn <= 9
       # Ternary: If @turn is even, O. Else, X.
       @turn % 2 == 0 ? @current_game_board.mark('O', address) : @current_game_board.mark('X', address)
-      # Just marked up the board. Check for a winner.
-      checkWinner
+      # Just marked up the board. Set the winner (returns nil if no winner)
+      @winner = checkWinner
       # That's one turn. Turn counter + 1.
       @turn += 1
       # Finally, if we just finished the 9th turn, then @turn will be 10.
       # Therefore, there are no more moves left. Check to see if @winner is still nil.
       # If both are true, then that's it. Set winner to a tie game.
-      @turn > 9 and @winner.nil? ? @winner =  'tie' : nil
+      @turn > 9 and @winner.nil? ? @winner = 'tie' : nil
     end
   end
 
   def checkWinner
+    # This is way, way shorter than the old way.
+    # But... I don't entirely agree with setting the @winner class attribute here.
+    # This is much better. The method is  'checkWinner', not 'setWinner'
     board_slices = winSlicer
     board_slices.each_index do |index|
       if board_slices[index].uniq.length == 1 and not board_slices[index][0].nil?
         if @turn % 2 == 0
-          @winner = @players[1][0]
+          return @players[1][0]
         else
-          @winner = @players[0][0]
+          return @players[0][0]
         end
+      else
+        return nil
       end
     end
   end
 
   def winSlicer
     # winslicer ref: 0 = h1, 1 = h2, 2 = h3, 3 = v1, 4 = v2, 5 = v3, 6 = d\ 7 = d/
+    # Preliminary edit, this is silly. @board = @current_game_board.board already!
+    # But I'm already thinking of pulling this out and putting it in the GameBoard class.
     board_slices = [
-      @current_game_board.board[0, 3],
-      @current_game_board.board[3, 3],
-      @current_game_board.board[6, 3],
-      [@current_game_board.board[0], @current_game_board.board[3], @current_game_board.board[6]],
-      [@current_game_board.board[1], @current_game_board.board[4], @current_game_board.board[7]],
-      [@current_game_board.board[2], @current_game_board.board[5], @current_game_board.board[8]],
-      [@current_game_board.board[0], @current_game_board.board[4], @current_game_board.board[8]],
-      [@current_game_board.board[6], @current_game_board.board[4], @current_game_board.board[2]]
+      @board[0, 3],
+      @board[3, 3],
+      @board[6, 3],
+      [@board[0], @board[3], @board[6]],
+      [@board[1], @board[4], @board[7]],
+      [@board[2], @board[5], @board[8]],
+      [@board[0], @board[4], @board[8]],
+      [@board[6], @board[4], @board[2]]
     ]
   end
 
@@ -128,7 +135,7 @@ class NoughtsAndCrosses
       'winner' => @winner.clone
     }
     @current_game_board = GameBoard.new
-    @board = @current_game_board.board
+    @board = @current_game_board.board #not sure if this is necessary... to IRB!
     @winner = nil
     @turn = 1
     @player1, @player2 = @player2, @player1

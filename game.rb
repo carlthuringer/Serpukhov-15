@@ -29,6 +29,21 @@ class GameBoard
       raise ArgumentError.new("Location is already marked.")
     end
   end
+
+  def boardSlicer
+    # winslicer ref: 0 = h1, 1 = h2, 2 = h3, 3 = v1, 4 = v2, 5 = v3, 6 = d\ 7 = d/
+    board_slices = [
+      @current_game_board.board[0, 3],
+      @current_game_board.board[3, 3],
+      @current_game_board.board[6, 3],
+      [@current_game_board.board[0], @current_game_board.board[3], @current_game_board.board[6]],
+      [@current_game_board.board[1], @current_game_board.board[4], @current_game_board.board[7]],
+      [@current_game_board.board[2], @current_game_board.board[5], @current_game_board.board[8]],
+      [@current_game_board.board[0], @current_game_board.board[4], @current_game_board.board[8]],
+      [@current_game_board.board[6], @current_game_board.board[4], @current_game_board.board[2]]
+    ]
+  end
+
 end
 
 class NoughtsAndCrosses
@@ -103,7 +118,7 @@ class NoughtsAndCrosses
   end
 
   def checkTie
-
+    # @TODO Implement some method that checks for a tie game. Hopefully before the game is over.
   end
 
   def newGame
@@ -373,6 +388,47 @@ class TicTacToeStrategy
     return rand(9)
   end
 
+  def alphaBeta(node, depth, a, b, player, max_player)
+    # implementation of alpha-beta minmax tree searching based on
+    # http://en.wikipedia.org/wiki/Alpha-beta_pruning
+    # node = a given state of the game board
+    # depth = How far ahead to look. 9 is a full game.
+    # a = Alpha
+    # b = Beta
+    # player = an array with [0] being the maximizing (current) player's symbol and [1] being the minimizing (opponent) player's symbol.
+    # maxplayer = The symbol of the maximizing player, the original caller of the function.
+    infinity = (1.0/0.0)
+    neg_infinity = (-1.0/0.0)
+
+    terminal = true if not node.index(nil)
+
+    return evaluate_node(node, player[0]) if depth = 0 or terminal
+
+    if player[0] == max_player
+      node.indexes(nil).each do |index|
+        child = node.dup
+        child[index] = player[0]
+        a = [a, alphabeta(child, depth - 1, a, b, player.reverse)].max
+        break if b <= a
+        return a
+      end
+    else
+      node.indexes(nil).each do |index|
+        child = node.dup
+        child[index] = player[0]
+        b = [b, alphabeta(child, depth - 1, a, b, player.reverse)].min
+        break if b <= a
+        return b
+      end
+    end
+  end
+
+  def evaluate_node(node, player)
+    # The result of this is a float indicating the value of the current node to the given player.
+    # node = Array representing the state of the game board.
+    # player = The mark of the player for whom the evaluation is being done.
+
+  end
 end
 
 class Player

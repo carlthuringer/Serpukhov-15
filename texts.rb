@@ -1,6 +1,6 @@
 # Collection of text for the game.
-def welcomeScreen(time)
-  screen = %{
+def welcomeScreen
+  return %{
               __                       _     _
              / _\\ ___ _ __ _ __  _   _| | __| |__   _____   __
              \\ \\ / _ \\ '__| '_ \\| | | | |/ /| '_ \\ / _ \\ \\ / /
@@ -13,11 +13,11 @@ BMEWS MOTD %s
 Welcome, comrade to your post on the front lines of the Soviet vigil against the
 treachery of the west. If you are not yet familiar with your equipment, ask
 Sgt. Dmitriev or Cpl. Zaitsev for manual 1184.b.}
-  printf(screen, time)
+  
   
 end
 def ticTacToeRules
-  screen = %{
+  return %{
 +-----------------------------------------------------------------------------+
 | Welcome to the Noughts and Crosses strategy coach!     __Tactics  Legend__  |
 | Using this program you can hone your mind and master   B: Block opponent    |
@@ -41,5 +41,24 @@ def ticTacToeRules
 | a draw. Good luck!                                                          |
 +-----------------------------------------------------------------------------+
   }
-  printf(screen)
+end
+def warning1
+  return %{
++-----------------------------------------------------------------------------+
+|  --------------"""```"      d```I````````````````````````````````/          |
+| |_            \\ |  __/    M| """ \\      U.S.S.R.              / \\\\          |
+|'  \\           _\\ \\/        |     O\\                           | .           |
+|    |  U.S.A  /          __Q_------                           \\  J           |
+|     \\     __/          /    ------\\                          _|             |
+|      \\_  |  \\          |            \\   _/\\_                |               |
+|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|
+|                        MISSILE LAUNCH DETECTED                              |
++-----------------------------------------------------------------------------+
+                 Visual Confirmation in T%s seconds
+According to the Doctrine of Mutually assured destruction and the 
+recommendation of the Soviet Air Defense Force and Soviet Leadership immediate 
+and complete retaliation must be enacted. Activate the Emergency Line and refer
+to the red book designated with today's date for the necessary codes and 
+procedures.
+  }
 end

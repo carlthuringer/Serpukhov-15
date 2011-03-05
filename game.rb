@@ -445,8 +445,8 @@ def playNAC
   prompt = gets
   prompt.chomp!
   system("clear")
-  # ticTacToeRules
-  # gets
+  printf(ticTacToeRules)
+  gets
   while prompt != 'n' and prompt != 'q'
     system("clear")
     while game.winner.nil?
@@ -469,8 +469,8 @@ def playNAC
             raise ArgumentError.new("Invalid Coordinate")
           end
           petrov.play(game, petrov_move)
-          rescue StandardError
-           $stderr.print $!
+        rescue StandardError
+          $stderr.print $!
           retry
         end
       end
@@ -501,6 +501,24 @@ def playNAC
   gets
 end
 
+def emergencyLine
+
+  puts "Connecting to Moscow"
+  puts "Dialing..."
+  sleep 2
+  puts "Establishing link..."
+  sleep 2.5
+  print "Transmit code? (y/n):"
+  if gets.chomp! == 'y'
+    puts "Initiating Missile Launch Sequence."
+    sleep 2
+    puts "Game Over. The world has been destroyed by nuclear holocaust"
+    return "gameover"
+  else
+    return "continue"
+  end
+end
+
 def mainProgram
   @START = Time.utc(1983,"sep",25,20,28,1)
   @DIFF = Time.new - @START
@@ -509,10 +527,7 @@ def mainProgram
   @X = Time.utc(1983,"sep",25,20,45,1)
   system("clear")
   #Do the welcome screen...
-  #if (Time.now - @DIFF <=> @L1) == -1
-     welcomeScreen(Time.now - @DIFF)
-  #end
-
+  printf(welcomeScreen, Time.now - @DIFF)
   print "\nLogin\nUser: "
   print "s.petrov\n(Press Enter)"
   gets
@@ -526,8 +541,11 @@ def mainProgram
     # 1 safe minute.
     # 11.5 minutes
     #Do the welcome screen...
-    #if (Time.now - @DIFF <=> @L1) == -1
-      welcomeScreen(Time.now - @DIFF)
+    if (Time.now - @DIFF <=> @L1) == -1
+      printf(welcomeScreen, Time.now - @DIFF)
+    else
+      printf(warning1, (Time.now - @DIFF - @X).to_i)
+    end
     #end
     print %{
 Programs:
@@ -536,12 +554,31 @@ Programs:
   3) Global Thermonuclear War
   4) Emergency Line
   q) Quit}
-    print "\nOut of memory error" if prompt == '1'
+    print "\nProgram missing. Contact G.Kasparov" if prompt == '1'
     print "\nMainframe Computing Time Allowance Exceeded. Contact Central Research." if prompt == '3'
+
     print "\nChoice?"
     prompt = gets.chomp!
 
     playNAC if prompt == '2'
+    if prompt == '4'
+      result = emergencyLine
+      if result == "gameover"
+        prompt = 'q'
+      end
+    end
+    if (Time.now - @DIFF <=> @X) == 1
+      prompt = 'q'
+      system("clear")
+      printf(welcomeScreen, Time.now - @DIFF)
+      sleep 3
+      puts "Missiles Lost."
+      sleep 1
+      puts "The missiles being tracked were a bug in the Oko system."
+      sleep 3
+      puts "By doubting your computer, disobeying procedures and waiting out the malfunction you have saved the free world."
+      puts "You win."
+    end
   end
 end
 

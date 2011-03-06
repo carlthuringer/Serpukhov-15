@@ -5,26 +5,26 @@ class GameBoard
   # ALERT all code here should be agnostic to any rectangular board-based game.
   # @board keeps an array of the current state of the board.
   #TODO Implement 2-dimensional boards of variable dimension.
-  attr_reader :board
-  def initialize(board = [])
+  attr_reader :array
+  def initialize(array = [])
     # We allow a predefined board to be passed in as an array.
-    @board = board
+    @array = array
     # Because we'll soon need to address the array by position, I want to make sure it either has a complete board, or re-initialize it with 9 nil objects.
-    if @board.nil? || @board.length != 9
-      @board = Array.new(9)
+    if @array.nil? || @array.length != 9
+      @array = Array.new(9)
     end
   end
 
   def [](index)
-    # Fancy method! Allows you to treat any GameBoard object like an array and access the internal @board array.
-    @board[index]
+    # Fancy method! Allows you to treat any GameBoard object like an array and access the internal @array array.
+    @array[index]
   end
 
   def mark(symbol, address)
     #Symbol is provided by the player. Presumably an X or O.
     #address is currently restricted to a single digit identifying a place on the array.
-    if @board[address].nil?
-      @board[address] = symbol
+    if @array[address].nil?
+      @array[address] = symbol
     else
       raise ArgumentError.new("Location is already marked.")
     end
@@ -33,14 +33,14 @@ class GameBoard
   def boardSlicer
     # boardSlicer ref: 0 = h1, 1 = h2, 2 = h3, 3 = v1, 4 = v2, 5 = v3, 6 = d\ 7 = d/
     board_slices = [
-      @board[0, 3],
-      @board[3, 3],
-      @board[6, 3],
-      [@board[0], @board[3], @board[6]],
-      [@board[1], @board[4], @board[7]],
-      [@board[2], @board[5], @board[8]],
-      [@board[0], @board[4], @board[8]],
-      [@board[6], @board[4], @board[2]]
+      @array[0, 3],
+      @array[3, 3],
+      @array[6, 3],
+      [@array[0], @array[3], @array[6]],
+      [@array[1], @array[4], @array[7]],
+      [@array[2], @array[5], @array[8]],
+      [@array[0], @array[4], @array[8]],
+      [@array[6], @array[4], @array[2]]
     ]
   end
 
@@ -55,9 +55,8 @@ class NoughtsAndCrosses
   # If neither player has achieved a win by the 9th turn, the game ends in a tie.
   attr_reader :winner, :board, :turn, :players
   def initialize(player1, player2)
-    @current_game_board = GameBoard.new
+    @board = GameBoard.new
     @winner = nil
-    @board = @current_game_board.board
     @player1 = [player1, 'X']
     @player2 = [player2, 'O']
     @players = [@player1, @player2]
@@ -78,7 +77,7 @@ class NoughtsAndCrosses
     # Though, hopefully, the second condition is never necessary.
     if @winner.nil? && @turn <= 9
       # Ternary: If @turn is even, O. Else, X.
-      @turn % 2 == 0 ? @current_game_board.mark('O', address) : @current_game_board.mark('X', address)
+      @turn % 2 == 0 ? @board.mark('O', address) : @board.mark('X', address)
       # Just marked up the board. Set the winner (returns nil if no winner)
       @winner = checkWinner
       # That's one turn. Turn counter + 1.
@@ -94,34 +93,20 @@ class NoughtsAndCrosses
     # This is way, way shorter than the old way.
     # But... I don't entirely agree with setting the @winner class attribute here.
     # This is much better. The method is  'checkWinner', not 'setWinner'
-    board_slices = winSlicer
+    board_slices = @board.boardSlicer
     board_slices.each_index do |index|
       if board_slices[index].uniq.length == 1 and not board_slices[index][0].nil?
         if @turn % 2 == 0
+          puts "Winner1"
+          gets
           return @players[1][0]
         else
+          puts "Winner2"
+          gets
           return @players[0][0]
         end
-      else
-        return nil
       end
     end
-  end
-
-  def winSlicer
-    # winslicer ref: 0 = h1, 1 = h2, 2 = h3, 3 = v1, 4 = v2, 5 = v3, 6 = d\ 7 = d/
-    # Preliminary edit, this is silly. @board = @current_game_board.board already!
-    # But I'm already thinking of pulling this out and putting it in the GameBoard class.
-    board_slices = [
-      @board[0, 3],
-      @board[3, 3],
-      @board[6, 3],
-      [@board[0], @board[3], @board[6]],
-      [@board[1], @board[4], @board[7]],
-      [@board[2], @board[5], @board[8]],
-      [@board[0], @board[4], @board[8]],
-      [@board[6], @board[4], @board[2]]
-    ]
   end
 
   def checkTie
@@ -131,17 +116,16 @@ class NoughtsAndCrosses
   def newGame
     # Reset the state of the game, and save the current game and winner to the history.
     @history << {
-      'board' => @current_game_board,
+      'board' => @board,
       'winner' => @winner.clone
     }
-    @current_game_board = GameBoard.new
-    @board = @current_game_board.board #not sure if this is necessary... to IRB!
+    @board = GameBoard.new
     @winner = nil
     @turn = 1
     @player1, @player2 = @player2, @player1
     @player1[1] = 'X'
     @player2[1] = 'O'
-    @players= [@player1, @player2]
+    @players = [@player1, @player2]
 
   end
 
@@ -172,6 +156,20 @@ class NoughtsAndCrosses
 
   end
 
+  def simpleDraw()
+    # The collect method is used to find and replace in an array. In this case, find Nil, replace with " ".
+    clean_board_array = @board.array.collect { |obj| obj.nil? ? " " : obj }
+    print "   A  B  C\n"
+    3.times { |index|
+      row = index + 1
+      print row.to_s + " "
+      # Array[index, length]. It's a good thing. Spit this out thrice and it almost looks like a tic tac toe board!
+      clean_board_array[3 * index, 3].each do |cell|
+        print "[" + cell + "]"
+      end
+      print "\n"
+    }
+  end
 end
 
 class TicTacToeStrategy
@@ -265,7 +263,7 @@ class TicTacToeStrategy
       'slice' => nil,
       'opening' => nil
     }
-    board_slices = game.winSlicer
+    board_slices = game.board.boardSlicer
     board_slices.each_index do |index|
       # Here's the plan. Check each slice for a nil (blank space) and two different indexes on 'mark'.
       # This should confirm a row, column, or diagonal which is one move away from a win by 'mark'.
@@ -297,7 +295,7 @@ class TicTacToeStrategy
       'slice' => nil,
       'opening' => nil
     }
-    board_slices = game.winSlicer
+    board_slices = game.board.boardSlicer
     board_slices.each_index do |index|
       if board_slices[index].compact.length == 1 && board_slices[index].index(mark)
         targets = [ { 'slice' => index, 'opening' => board_slices[index].index(nil) }, { 'slice' => index, 'opening' => board_slices[index].rindex(nil) } ]
@@ -323,10 +321,10 @@ class TicTacToeStrategy
     # X has always taken a center and a corner when preparing to fork.
     # One: X marked a corner. You took center. X is in opposite corner.You must play a side to prevent the fork.
     # Two: X marked the center. You took a corner. You must play a corner to prevent the fork.
-    board_slices = game.winSlicer
+    board_slices = game.board.boardSlicer
     # winslicer ref: 0 = h1, 1 = h2, 2 = h3, 3 = v1, 4 = v2, 5 = v3, 6 = d\ 7 = d/
     if board_slices[6].compact.length == 3 or board_slices[7].compact.length == 3
-      case game.board.index(mark)
+      case game.board.array.index(mark) #I thought this would be confusing, but it reads well! "Game Board Array Index"
       when 4 then return playEmptySide(game, mark)
       else return playEmptyCorner(game, mark)
       end
@@ -337,7 +335,7 @@ class TicTacToeStrategy
   def forkYou(game, mark)
     # See what I did there?
     if game.turn == 3
-      case game.board.index(mark)
+      case game.board.array.index(mark)
       when 4 then return playOpposingCorner(game, mark)
       else return playCenter(game, mark) if game.board[4].nil?
       end
@@ -352,7 +350,7 @@ class TicTacToeStrategy
   def playOpposingCorner(game, mark)
     corners = [0, 2, 6, 8]
     mark == 'X' ? opponent_mark = 'O' : opponent_mark = 'X'
-    opponent_in_corner = game.board.index(opponent_mark)
+    opponent_in_corner = game.board.array.index(opponent_mark)
     case opponent_in_corner
     when 0 then return 8 if game.board[8].nil?
     when 2 then return 6 if game.board[6].nil?
@@ -473,21 +471,6 @@ class AI < Player
   end
 end
 
-def simpleDraw(board)
-  # The collect method is used to find and replace in an array. In this case, find Nil, replace with " ".
-  clean_board = board.collect { |obj| obj.nil? ? " " : obj }
-  print "   A  B  C\n"
-  3.times { |index|
-    row = index + 1
-    print row.to_s + " "
-    # Array[index, length]. It's a good thing. Spit this out thrice and it almost looks like a tic tac toe board!
-    clean_board[3 * index, 3].each do |cell|
-      print "[" + cell + "]"
-    end
-    print "\n"
-  }
-end
-
 def playNAC
   # Pretty much the mainloop of the game.
 
@@ -524,7 +507,7 @@ def playNAC
           puts "Game " + game_count.to_s
           puts "Player " + game.players[0][1] + ": " + game.players[0][0].name + "; " + game.players[0][0].status + "\n"
           puts "Player " + game.players[1][1] + ": " + game.players[1][0].name + "; " + game.players[1][0].status + "\n\n"
-          simpleDraw(game.board)
+          game.simpleDraw()
           puts e
           print "What is the coordinate of your next move? "
           petrov_move = gets.chomp!
@@ -543,7 +526,7 @@ def playNAC
     puts "Game " + game_count.to_s
     puts "Player " + game.players[0][1] + ": " + game.players[0][0].name + "; " + game.players[0][0].status + "\n"
     puts "Player " + game.players[1][1] + ": " + game.players[1][0].name + "; " + game.players[1][0].status + "\n\n"
-    simpleDraw(game.board)
+    game.simpleDraw()
 
     if game.winner == 'tie'
       puts "There was no winner this time."

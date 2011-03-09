@@ -15,3 +15,25 @@ class TestCheckWinner < Test::Unit::TestCase
     assert_equal(player1, game.checkWinner)
   end
 end
+
+class TestGameBoard < Test::Unit::TestCase
+  def test_boardSlicer
+    board = [
+      "X", "O", "O",
+      "O", "X", "O",
+      "O", "X", "O"]
+    sliced = [
+      ["X", "O", "O"],
+      ["O", "X", "O"],
+      ["O", "X", "O"],
+      ["X", "O", "O"],
+      ["O", "X", "X"],
+      ["O", "O", "O"],
+      ["X", "X", "O"],
+      ["O", "X", "O"]
+    ]
+
+    board = GameBoard.new(board)
+    assert_equal(sliced, board.boardSlicer)
+  end
+end

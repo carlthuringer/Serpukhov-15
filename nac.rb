@@ -68,7 +68,7 @@ class NoughtsAndCrosses
     # As you'll see later, the players array is reversed to facilitate the switching of the current player.
     # I think this is clever, and that it will also be more trouble than it was worth. :D
     # Edit: IT WAS. O_O
-    @turn % 2 == 0 ? @players[1][0] : @players[0][0]
+    @turn % 2 == 0 ? @players[0][0] : @players[1][0]
   end
 
   def play(address)
@@ -94,17 +94,9 @@ class NoughtsAndCrosses
     # But... I don't entirely agree with setting the @winner class attribute here.
     # This is much better. The method is  'checkWinner', not 'setWinner'
     board_slices = @board.boardSlicer
-    board_slices.each_index do |index|
-      if board_slices[index].uniq.length == 1 and not board_slices[index][0].nil?
-        if @turn % 2 == 0
-          puts "Winner1"
-          gets
-          return @players[1][0]
-        else
-          puts "Winner2"
-          gets
-          return @players[0][0]
-        end
+    board_slices.each do |slice|
+      if slice.uniq.length == 1
+        return currentPlayer
       end
     end
   end
@@ -407,7 +399,7 @@ class TicTacToeStrategy
 
     terminal = true if not node.index(nil)
 
-    return evaluate_node(node, player[0]) if depth = 0 or terminal
+    return evaluate_node(node, player[0]) if depth == 0 or terminal
 
     if player[0] == max_player
       node.indexes(nil).each do |index|

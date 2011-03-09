@@ -95,10 +95,11 @@ class NoughtsAndCrosses
     # This is much better. The method is  'checkWinner', not 'setWinner'
     board_slices = @board.boardSlicer
     board_slices.each do |slice|
-      if slice.uniq.length == 1
+      if slice.uniq.length == 1 and slice.index(nil) == nil
         return currentPlayer
       end
     end
+    return nil
   end
 
   def checkTie

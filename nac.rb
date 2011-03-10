@@ -94,17 +94,11 @@ class NoughtsAndCrosses
     # But... I don't entirely agree with setting the @winner class attribute here.
     # This is much better. The method is  'checkWinner', not 'setWinner'
     board_slices = @board.boardSlicer
-    board_slices.each_index do |index|
-      if board_slices[index].uniq.length == 1 and not board_slices[index][0].nil?
-        if @turn % 2 == 0
-          puts "Winner1"
-          gets
-          return @players[1][0]
-        else
-          puts "Winner2"
-          gets
-          return @players[0][0]
-        end
+    board_slices.each do |slice|
+      if slice.uniq.length == 1# and slice.index(nil) == nil
+        return currentPlayer
+      else 
+        return nil
       end
     end
   end
@@ -402,12 +396,10 @@ class TicTacToeStrategy
     # b = Beta
     # player = an array with [0] being the maximizing (current) player's symbol and [1] being the minimizing (opponent) player's symbol.
     # maxplayer = The symbol of the maximizing player, the original caller of the function.
-    infinity = (1.0/0.0)
-    neg_infinity = (-1.0/0.0)
 
     terminal = true if not node.index(nil)
 
-    return evaluate_node(node, player[0]) if depth = 0 or terminal
+    return evaluate_node(node, player[0]) if depth == 0 or terminal
 
     if player[0] == max_player
       node.indexes(nil).each do |index|

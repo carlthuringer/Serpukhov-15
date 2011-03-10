@@ -393,39 +393,48 @@ class TicTacToeStrategy
     # b = Beta
     # players = an array with [0] being the maximizing (current) player and [1] being the minimizing (opponent) player.
     # max_player = The Maximizing player, the original caller of the function.
+    result = 0
+    terminal = true if not node.board.array.index(nil) or not node.winner.nil?
 
-    terminal = true if not node.board.array.index(nil)
-
-    return evaluate_node(node, players[0]) if depth == 0 or terminal
-
-    if players[0] == max_player
+    if depth == 0 or terminal
+      # Because with all the deep cloning the node's player objects are all hoplessly irreconcilable with the players array we have...
+      # We need to grab the right one by searching. Name isn't the best way, but there's little else to go on.
+      node.players.each do |match_player|
+        if match_player[0].name == players[0].name
+          return evaluate_node(node, match_player[0])
+        end
+      end
+    end
+    if players[0].name == max_player.name
       node.board.array.each_index do |index|
         if node.board.array[index] == nil
-          child = node.dup
+          child = Marshal::load(Marshal.dump(node))
           players[0].play(child, child.convertCoord(index))
           a = [a, alphaBeta(child, depth - 1, a, b, players.reverse, max_player)].max
           break if b <= a
-          return a
+          result = a
         end
       end
     else
       node.board.array.each_index do |index|
         if node.board.array[index] == nil
-          child = node.dup
+          child = Marshal::load(Marshal.dump(node))
           players[1].play(child, child.convertCoord(index))
           b = [b, alphaBeta(child, depth - 1, a, b, players.reverse, max_player)].min
           break if b <= a
-          return b
+          result = b
         end
       end
     end
+    return result
   end
 
   def evaluate_node(node, player)
     # The result of this is a float indicating the value of the current node to the given player.
     # node = A full NAC game object.
     # player = The player object for whom the evaluation is being done.
-    infinity = (1.0/0.0)
+    # Ruby doesn't recognize that infinity < infinity + 1. We substitute 1 million.
+    infinity = 1000000
     # The strategy functions need a 'mark' to base their decisions on.
     # We get this mark by flattening the 'players' array and then adding 1 to the index of the matching player object.
     # This works because flattened the array reads [player1, "X", player2, "O"]

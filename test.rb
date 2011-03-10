@@ -64,7 +64,7 @@ class TestTicTacToeStrategy < Test::Unit::TestCase
 
   def test_evaluate_node_winLose
     # Test node evaluation. A winning board should return +infinity, a losing -infinity
-    infinity = (1.0/0.0)
+    infinity = 1000000
     strategy = TicTacToeStrategy.new
     p1 = Player.new("Scott")
     p2 = Player.new("Casey")
@@ -136,16 +136,19 @@ class TestTicTacToeStrategy < Test::Unit::TestCase
     p2.play(game, "A2")
     players = [p1, p2]
     results = Array.new(9)
-    infinity = (1.0/0.0)
+    infinity = 1000000
 
     game.board.array.each_index do |index|
       if game.board.array[index] == nil
-        node = game.dup
+        node = Marshal::load(Marshal.dump(game))
         players[0].play(node, node.convertCoord(index))
         results[index] = strategy.alphaBeta(node, 9 - 1, -infinity, infinity, players, players[0])
       end
     end
-    p1.play(game, node.convertCoord(results.index(results.max)))
+    p results
+    game.simpleDraw
+    p game.convertCoord(results.index(results.compact.max))
+    p1.play(game, game.convertCoord(results.index(results.compact.max)))
     assert_equal(p1, game.winner)
   end
 

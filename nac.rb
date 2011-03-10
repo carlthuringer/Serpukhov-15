@@ -420,8 +420,27 @@ class TicTacToeStrategy
 
   def evaluate_node(node, player)
     # The result of this is a float indicating the value of the current node to the given player.
-    # node = Array representing the state of the game board.
-    # player = The mark of the player for whom the evaluation is being done.
+    # node = A full NAC game object.
+    # player = The player object for whom the evaluation is being done.
+    infinity = (1.0/0.0)
+    # The strategy functions need a 'mark' to base their decisions on. 
+    # We get this mark by flattening the 'players' array and then adding 1 to the index of the matching player object.
+    # This works because flattened the array reads [player1, "X", player2, "O"]
+    current_player_mark = node.players.flatten[node.players.flatten.index(player) + 1]
+    # And the opposing player mark...
+    current_player_mark == 'X' ? opposing_player_mark = 'O' : opposing_player_mark = 'X'
+    # This is starting to look like a runaway conditional...
+    if node.winner == player
+      return infinity
+    elsif node.winner == 'tie'
+      return 0
+    elsif node.winner != nil
+      return -infinity
+    elsif checkForWin(node, current_player_mark) != nil 
+      return 1
+    elsif checkForWin(node, opposing_player_mark) != nil
+      return -1
+    end
 
   end
 end

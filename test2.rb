@@ -58,7 +58,40 @@ class TestTicTacToeStrategy < Test::Unit::TestCase
     p1.play(game, "A3")
     assert_equal(1, strategy.evaluate_node(game, p1))
     assert_equal(-1, strategy.evaluate_node(game, p2))
-    
+    # A little further and we set up a fork...
+    p2.play(game, "C1")
+    p1.play(game, "C3")
+    assert_equal(2, strategy.evaluate_node(game, p1))
+    assert_equal(-2, strategy.evaluate_node(game, p2))
+
+  end
+
+  def test_alphaBeta
+    # Test the alpha-beta pruning algorithm to see that it chooses correctly the next move.
+    # Given a game where X has taken centar and corner, and O corner and adjacent side.
+    # X Should block O to prevent a win by O and also to create a fork opportunity.
+    strategy = TicTacToeStrategy.new
+    p1 = Player.new("Scott")
+    p2 = Player.new("Casey")
+    game = NoughtsAndCrosses.new(p1, p2)
+    # A game in which Player 1 has a chance to fork and must block Player 2.
+    p1.play(game, "B2")
+    p2.play(game, "A1")
+    p1.play(game, "C3")
+    p2.play(game, "A2")
+    players = [p1, p2]
+    results = Array.new(9)
+    infinity = (1.0/0.0)
+
+    game.board.array.each_index do |index|
+      if game.board.array[index] == nil
+        node = game.dup
+        players[0].play(node, node.convertCoord(index))
+        results[index] = strategy.alphaBeta(node, 9 - 1, -infinity, infinity, players, players[0])
+      end
+    end
+    p1.play(game, node.convertCoord(results.index(results.max)))
+    assert_equal(p1, game.winner)
   end
 
 end

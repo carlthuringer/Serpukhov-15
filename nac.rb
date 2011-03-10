@@ -32,7 +32,7 @@ class GameBoard
 
   def boardSlicer
     # boardSlicer ref: 0 = h1, 1 = h2, 2 = h3, 3 = v1, 4 = v2, 5 = v3, 6 = d\ 7 = d/
-    board_slices = [
+    return [
       @array[0, 3],
       @array[3, 3],
       @array[6, 3],
@@ -93,14 +93,12 @@ class NoughtsAndCrosses
     # This is way, way shorter than the old way.
     # But... I don't entirely agree with setting the @winner class attribute here.
     # This is much better. The method is  'checkWinner', not 'setWinner'
-    board_slices = @board.boardSlicer
-    board_slices.each do |slice|
-      if slice.uniq.length == 1# and slice.index(nil) == nil
+    @board.boardSlicer.each do |slice|
+      if slice.uniq.length == 1  and slice.index(nil) == nil
         return currentPlayer
-      else 
-        return nil
       end
     end
+    return nil
   end
 
   def checkTie

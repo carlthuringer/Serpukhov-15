@@ -36,10 +36,23 @@ class TestNoughtsAndCrosses < Test::Unit::TestCase
     p2.play(game, "A3")
     p1.play(game, "B1")
     p2.play(game, "C1")
-    game.simpleDraw
-    p game.board.boardSlicer
-    assert_equal(p1, game.winner)
-    #assert_equal(p1, game.checkWinner)
+    assert_equal(p1, game.checkWinner) # Game turn will be off by one. So if this works the other player is returned.
+  end
 
+  def test_checkWinner_tie
+    # Pretty much have to set up and play a whole game. Then see that it reports the right person.
+    p1 = Player.new("Scott")
+    p2 = Player.new("Casey")
+    game = NoughtsAndCrosses.new(p1, p2)
+    p1.play(game, "A1")
+    p2.play(game, "A3")
+    p1.play(game, "A2")
+    p2.play(game, "B1")
+    p1.play(game, "B3")
+    p2.play(game, "B2")
+    p1.play(game, "C1")
+    p2.play(game, "C3")
+    p1.play(game, "C2")
+    assert_equal(nil, game.checkWinner) # Game turn will be off by one. So if this works the other player is returned.
   end
 end

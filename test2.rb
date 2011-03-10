@@ -57,7 +57,7 @@ class TestTicTacToeStrategy < Test::Unit::TestCase
     p2.play(game, "C2")
     p1.play(game, "A3")
     assert_equal(1, strategy.evaluate_node(game, p1))
-    
+    assert_equal(-1, strategy.evaluate_node(game, p2))
     
   end
 

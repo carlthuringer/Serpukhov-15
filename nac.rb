@@ -32,7 +32,7 @@ class GameBoard
 
   def boardSlicer
     # boardSlicer ref: 0 = h1, 1 = h2, 2 = h3, 3 = v1, 4 = v2, 5 = v3, 6 = d\ 7 = d/
-    board_slices = [
+    return [
       @array[0, 3],
       @array[3, 3],
       @array[6, 3],
@@ -68,7 +68,7 @@ class NoughtsAndCrosses
     # As you'll see later, the players array is reversed to facilitate the switching of the current player.
     # I think this is clever, and that it will also be more trouble than it was worth. :D
     # Edit: IT WAS. O_O
-    @turn % 2 == 0 ? @players[0][0] : @players[1][0]
+    @turn % 2 == 0 ? @players[1][0] : @players[0][0]
   end
 
   def play(address)
@@ -93,9 +93,8 @@ class NoughtsAndCrosses
     # This is way, way shorter than the old way.
     # But... I don't entirely agree with setting the @winner class attribute here.
     # This is much better. The method is  'checkWinner', not 'setWinner'
-    board_slices = @board.boardSlicer
-    board_slices.each do |slice|
-      if slice.uniq.length == 1 and slice.index(nil) == nil
+    @board.boardSlicer.each do |slice|
+      if slice.uniq.length == 1  and slice.index(nil) == nil
         return currentPlayer
       end
     end
@@ -309,7 +308,6 @@ class TicTacToeStrategy
   end
 
   def stopFork(game, mark)
-    # Well. This requires the program to look into the future.
     # There are exactly two fork defense scenarios for player 2.
     # X has always taken a center and a corner when preparing to fork.
     # One: X marked a corner. You took center. X is in opposite corner.You must play a side to prevent the fork.
@@ -386,45 +384,76 @@ class TicTacToeStrategy
     return rand(9)
   end
 
-  def alphaBeta(node, depth, a, b, player, max_player)
+  def alphaBeta(node, depth, a, b, players, max_player)
     # implementation of alpha-beta minmax tree searching based on
     # http://en.wikipedia.org/wiki/Alpha-beta_pruning
     # node = a given state of the game board
     # depth = How far ahead to look. 9 is a full game.
     # a = Alpha
     # b = Beta
-    # player = an array with [0] being the maximizing (current) player's symbol and [1] being the minimizing (opponent) player's symbol.
-    # maxplayer = The symbol of the maximizing player, the original caller of the function.
-    infinity = (1.0/0.0)
-    neg_infinity = (-1.0/0.0)
+    # players = an array with [0] being the maximizing (current) player and [1] being the minimizing (opponent) player.
+    # max_player = The Maximizing player, the original caller of the function.
 
-    terminal = true if not node.index(nil)
+    terminal = true if not node.board.array.index(nil)
 
-    return evaluate_node(node, player[0]) if depth == 0 or terminal
+    return evaluate_node(node, players[0]) if depth == 0 or terminal
 
-    if player[0] == max_player
-      node.indexes(nil).each do |index|
-        child = node.dup
-        child[index] = player[0]
-        a = [a, alphabeta(child, depth - 1, a, b, player.reverse)].max
-        break if b <= a
-        return a
+    if players[0] == max_player
+      node.board.array.each_index do |index|
+        if node.board.array[index] == nil
+          child = node.dup
+          players[0].play(child, child.convertCoord(index))
+          a = [a, alphaBeta(child, depth - 1, a, b, players.reverse, max_player)].max
+          break if b <= a
+          return a
+        end
       end
     else
-      node.indexes(nil).each do |index|
-        child = node.dup
-        child[index] = player[0]
-        b = [b, alphabeta(child, depth - 1, a, b, player.reverse)].min
-        break if b <= a
-        return b
+      node.board.array.each_index do |index|
+        if node.board.array[index] == nil
+          child = node.dup
+          players[1].play(child, child.convertCoord(index))
+          b = [b, alphaBeta(child, depth - 1, a, b, players.reverse, max_player)].min
+          break if b <= a
+          return b
+        end
       end
     end
   end
 
   def evaluate_node(node, player)
     # The result of this is a float indicating the value of the current node to the given player.
-    # node = Array representing the state of the game board.
-    # player = The mark of the player for whom the evaluation is being done.
+    # node = A full NAC game object.
+    # player = The player object for whom the evaluation is being done.
+    infinity = (1.0/0.0)
+    # The strategy functions need a 'mark' to base their decisions on.
+    # We get this mark by flattening the 'players' array and then adding 1 to the index of the matching player object.
+    # This works because flattened the array reads [player1, "X", player2, "O"]
+    current_player_mark = node.players.flatten[node.players.flatten.index(player) + 1]
+    # And the opposing player mark...
+    current_player_mark == 'X' ? opposing_player_mark = 'O' : opposing_player_mark = 'X'
+    # This is starting to look like a runaway conditional...
+    if node.winner == player
+      return infinity
+    elsif node.winner != 'tie' and node.winner != nil
+      return -infinity
+    end
+    heuristic_value = 0
+    current_player_value = 1
+    opposing_player_value = -1
+
+    # The slices represent every winning line.
+    # If you remove nil elements and non-unique elements, and it matches the player's mark,
+    # and its compacted length is 2, then that tells us that not only does the player
+    # have two marks on that line, but that there's also an empty space.
+    node.board.boardSlicer.each do |slice|
+      if slice.compact.length == 2 and slice.compact.uniq == [current_player_mark]
+        heuristic_value += current_player_value
+      elsif slice.compact.length == 2 and slice.compact.uniq == [opposing_player_mark]
+        heuristic_value += opposing_player_value
+      end
+    end
+    return heuristic_value
 
   end
 end

@@ -64,7 +64,8 @@ class TestTicTacToeStrategy < Test::Unit::TestCase
 
   def test_evaluate_node_winLose
     # Test node evaluation. A winning board should return +infinity, a losing -infinity
-    infinity = 1000000
+    win = 100
+    lose = -win
     strategy = TicTacToeStrategy.new
     p1 = Player.new("Scott")
     p2 = Player.new("Casey")
@@ -77,8 +78,8 @@ class TestTicTacToeStrategy < Test::Unit::TestCase
     p1.play(game, "B1")
     p2.play(game, "C1")
 
-    assert_equal(infinity, strategy.evaluate_node(game, p2))
-    assert_equal(-infinity, strategy.evaluate_node(game, p1))
+    assert_equal(win, strategy.evaluate_node(game, p2))
+    assert_equal(lose, strategy.evaluate_node(game, p1))
 
   end
 
@@ -111,13 +112,13 @@ class TestTicTacToeStrategy < Test::Unit::TestCase
     p1.play(game, "B2")
     p2.play(game, "C2")
     p1.play(game, "A3")
-    assert_equal(1, strategy.evaluate_node(game, p1))
-    assert_equal(-1, strategy.evaluate_node(game, p2))
+    assert_equal(55, strategy.evaluate_node(game, p1))
+    assert_equal(-45, strategy.evaluate_node(game, p2))
     # A little further and we set up a fork...
     p2.play(game, "C1")
     p1.play(game, "C3")
-    assert_equal(2, strategy.evaluate_node(game, p1))
-    assert_equal(-2, strategy.evaluate_node(game, p2))
+    assert_equal(110, strategy.evaluate_node(game, p1))
+    assert_equal(-90, strategy.evaluate_node(game, p2))
 
   end
 
@@ -134,22 +135,53 @@ class TestTicTacToeStrategy < Test::Unit::TestCase
     p2.play(game, "A1")
     p1.play(game, "C3")
     p2.play(game, "A2")
-    players = [p1, p2]
     results = Array.new(9)
     infinity = 1000000
 
     game.board.array.each_index do |index|
       if game.board.array[index] == nil
         node = Marshal::load(Marshal.dump(game))
-        players[0].play(node, node.convertCoord(index))
-        results[index] = strategy.alphaBeta(node, 9 - 1, -infinity, infinity, players, players[0])
+        node.play(index)
+        results[index] = strategy.alphaBeta(node, 5 , -infinity, infinity, true)
       end
     end
-    p results
+    assert_equal("A3", game.convertCoord(results.index(results.compact.max)))
+  end
+
+  def test_play_alphaBeta
+    # We need to see that the alphaBeta algorithm can play through several games
+    # intelligently. So we will play 3 games against it. One in which it should fork and win.
+    # One in which it should block the opponent's fork.
+    # One in which it plays against an opponent that prevents its fork and ends in a tie.
+    strategy = TicTacToeStrategy.new
+    p1 = Player.new("Scott")
+    p2 = Player.new("Casey")
+    game = NoughtsAndCrosses.new(p1, p2)
+    strategy.play_alphaBeta(game, p1)
     game.simpleDraw
-    p game.convertCoord(results.index(results.compact.max))
-    p1.play(game, game.convertCoord(results.index(results.compact.max)))
+    #p2.play(game, "A1")
+    #strategy.play_alphaBeta(game, p1)
+    # game.simpleDraw
     assert_equal(p1, game.winner)
+  end
+
+  def test_depth_alphaBeta
+    strategy = TicTacToeStrategy.new
+    p1 = Player.new("Scott")
+    p2 = Player.new("Casey")
+    game = NoughtsAndCrosses.new(p1, p2)
+    infinity = 1000000
+    9.times do |depth|
+      results = []
+      game.board.array.each_index do |index|
+        if game.board.array[index] == nil
+          node = Marshal::load(Marshal.dump(game))
+          node.play(index)
+          results[index] = strategy.alphaBeta(node, depth, -infinity, infinity, true)
+        end
+      end
+      p depth, results
+    end
   end
 
 end

@@ -384,7 +384,7 @@ class TicTacToeStrategy
     return rand(9)
   end
 
-  def alphaBeta(node, depth, a, b, players, max_player)
+  def alphaBeta(node, depth, a, b, max_player)
     # implementation of alpha-beta minmax tree searching based on
     # http://en.wikipedia.org/wiki/Alpha-beta_pruning
     # node = a given state of the game board
@@ -399,18 +399,23 @@ class TicTacToeStrategy
     if depth == 0 or terminal
       # Because with all the deep cloning the node's player objects are all hoplessly irreconcilable with the players array we have...
       # We need to grab the right one by searching. Name isn't the best way, but there's little else to go on.
-      node.players.each do |match_player|
-        if match_player[0].name == players[0].name
-          return evaluate_node(node, match_player[0])
-        end
+      #node.players.each do |match_player|
+      #  if match_player[0].name == players[0].name
+      #    return evaluate_node(node, match_player[0])
+      #  end
+      #end
+      if max_player
+        return evaluate_node(node, node.players[0][0])
+      else
+        return evaluate_node(node, node.players[1][0])
       end
     end
-    if players[0].name == max_player.name
+    if max_player
       node.board.array.each_index do |index|
         if node.board.array[index] == nil
           child = Marshal::load(Marshal.dump(node))
-          players[0].play(child, child.convertCoord(index))
-          a = [a, alphaBeta(child, depth - 1, a, b, players.reverse, max_player)].max
+          child.play(index)
+          a = [a, alphaBeta(child, depth - 1, a, b, !max_player)].max
           break if b <= a
           result = a
         end
@@ -419,8 +424,8 @@ class TicTacToeStrategy
       node.board.array.each_index do |index|
         if node.board.array[index] == nil
           child = Marshal::load(Marshal.dump(node))
-          players[1].play(child, child.convertCoord(index))
-          b = [b, alphaBeta(child, depth - 1, a, b, players.reverse, max_player)].min
+          child.play(index)
+          b = [b, alphaBeta(child, depth - 1, a, b, !max_player)].min
           break if b <= a
           result = b
         end
@@ -434,7 +439,8 @@ class TicTacToeStrategy
     # node = A full NAC game object.
     # player = The player object for whom the evaluation is being done.
     # Ruby doesn't recognize that infinity < infinity + 1. We substitute 1 million.
-    infinity = 1000000
+    win = 100
+    loss = -100
     # The strategy functions need a 'mark' to base their decisions on.
     # We get this mark by flattening the 'players' array and then adding 1 to the index of the matching player object.
     # This works because flattened the array reads [player1, "X", player2, "O"]
@@ -443,26 +449,43 @@ class TicTacToeStrategy
     current_player_mark == 'X' ? opposing_player_mark = 'O' : opposing_player_mark = 'X'
     # This is starting to look like a runaway conditional...
     if node.winner == player
-      return infinity
+      return win
     elsif node.winner != 'tie' and node.winner != nil
-      return -infinity
+      return loss
+    else 
+      return 0
     end
-    heuristic_value = 0
-    current_player_value = 1
-    opposing_player_value = -1
+    #heuristic_value = 1
+    #current_player_value = 55
+    #opposing_player_value = 45
 
     # The slices represent every winning line.
     # If you remove nil elements and non-unique elements, and it matches the player's mark,
     # and its compacted length is 2, then that tells us that not only does the player
     # have two marks on that line, but that there's also an empty space.
-    node.board.boardSlicer.each do |slice|
-      if slice.compact.length == 2 and slice.compact.uniq == [current_player_mark]
-        heuristic_value += current_player_value
-      elsif slice.compact.length == 2 and slice.compact.uniq == [opposing_player_mark]
-        heuristic_value += opposing_player_value
+#    node.board.boardSlicer.each do |slice|
+#      if slice.compact.length == 2 and slice.compact.uniq == [current_player_mark]
+#        heuristic_value *= current_player_value
+#          elsif slice.compact.length == 2 and slice.compact.uniq == [opposing_player_mark]
+#        heuristic_value *= opposing_player_value
+#      end
+#    end
+#    return heuristic_value
+
+  end
+
+  def play_alphaBeta(game, player)
+    results = Array.new(9)
+    infinity = 1000000
+    game.board.array.each_index do |index|
+      if game.board.array[index] == nil
+        node = Marshal::load(Marshal.dump(game))
+        node.play(index)
+        results[index] = alphaBeta(node, 5, -infinity, infinity, true)
       end
     end
-    return heuristic_value
+    p results
+    player.play(game, game.convertCoord(results.index(results.compact.max)))
 
   end
 end

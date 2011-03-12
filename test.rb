@@ -159,9 +159,12 @@ class TestTicTacToeStrategy < Test::Unit::TestCase
     game = NoughtsAndCrosses.new(p1, p2)
     strategy.play_alphaBeta(game, p1)
     game.simpleDraw
-    #p2.play(game, "A1")
-    #strategy.play_alphaBeta(game, p1)
-    # game.simpleDraw
+    p2.play(game, "B2")
+    strategy.play_alphaBeta(game, p1)
+    game.simpleDraw
+    p2.play(game, "C1")
+    strategy.play_alphaBeta(game, p1)
+    game.simpleDraw
     assert_equal(p1, game.winner)
   end
 
@@ -170,14 +173,14 @@ class TestTicTacToeStrategy < Test::Unit::TestCase
     p1 = Player.new("Scott")
     p2 = Player.new("Casey")
     game = NoughtsAndCrosses.new(p1, p2)
-    infinity = 1000000
+    infinity = (1.0/0.0)
     9.times do |depth|
       results = []
       game.board.array.each_index do |index|
         if game.board.array[index] == nil
           node = Marshal::load(Marshal.dump(game))
           node.play(index)
-          results[index] = strategy.alphaBeta(node, depth, -infinity, infinity, true)
+          #results[index] = strategy.alphaBeta(node, depth, -infinity, infinity, true)
         end
       end
       p depth, results

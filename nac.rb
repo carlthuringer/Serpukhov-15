@@ -416,8 +416,9 @@ class TicTacToeStrategy
           child = Marshal::load(Marshal.dump(node))
           child.play(index)
           a = [a, alphaBeta(child, depth - 1, a, b, !max_player)].max
-          break if b <= a
-          result = a
+          #break if b <= a
+          #result = a
+          return a if b <= a
         end
       end
     else
@@ -426,8 +427,9 @@ class TicTacToeStrategy
           child = Marshal::load(Marshal.dump(node))
           child.play(index)
           b = [b, alphaBeta(child, depth - 1, a, b, !max_player)].min
-          break if b <= a
-          result = b
+          #break if b <= a
+          #result = b
+          return b if b <= a
         end
       end
     end
@@ -439,8 +441,8 @@ class TicTacToeStrategy
     # node = A full NAC game object.
     # player = The player object for whom the evaluation is being done.
     # Ruby doesn't recognize that infinity < infinity + 1. We substitute 1 million.
-    win = 100
-    loss = -100
+    win = 1
+    loss = -1
     # The strategy functions need a 'mark' to base their decisions on.
     # We get this mark by flattening the 'players' array and then adding 1 to the index of the matching player object.
     # This works because flattened the array reads [player1, "X", player2, "O"]
@@ -485,7 +487,9 @@ class TicTacToeStrategy
       end
     end
     p results
-    player.play(game, game.convertCoord(results.index(results.compact.max)))
+    gets
+    game.play(results.index(results.compact.max))
+    return [ results.index(results.compact.max), "aB" ]
 
   end
 end
@@ -520,7 +524,8 @@ class AI < Player
 
   def play(game)
     # Pass the game along... This method ought to work with any @strategy loaded.
-    result = @strategy.playSmartly(game)
+    #result = @strategy.playSmartly(game)
+    result = @strategy.play_alphaBeta(game, self)
     @status << game.convertCoord(result[0]) + "-" + result[1] + ","
   end
 end

@@ -583,6 +583,6 @@ Programs:
 end
 
 # For fun, some stuff.
-require 'texts'
+require './texts'
 
 mainProgram
